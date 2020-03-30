@@ -28,8 +28,8 @@ FindDiff:
 ; This is a test worldgen. The "flat" worldgen will create a world with the following characteristics:
 ; * Bedrock from z=0 to z=2
 ; * Stone from z=3 to z=10
-; * Grass from z=10 to z=15
-; * Air from z=15 to z=255
+; * Grass from z=11 to z=15
+; * Air from z=16 to z=255
 ;
 ; xx yy
 ; 00 zz
