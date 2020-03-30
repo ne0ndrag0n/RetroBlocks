@@ -10,11 +10,6 @@ H_WORLDGEN = 1
 ; Where "Block" is a u16 containing one status u8 and one enumated u8 block type.
 
 
-; Determine if the first x, y, z falls within the same chunk as the second x, y, z.
-	macro IsSameChunk
-		; TODO
-	endm
-
 ; Search SRAM for a diff at this location.
 ; xx yy
 ; 00 zz

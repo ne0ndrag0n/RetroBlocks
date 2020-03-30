@@ -1,4 +1,5 @@
  include 'modules/block/mod.asm'
+ include 'modules/diff/mod.asm'
  include 'modules/helpers/mod.asm'
  include 'modules/interrupts/mod.asm'
  include 'modules/static_vdp/mod.asm'
