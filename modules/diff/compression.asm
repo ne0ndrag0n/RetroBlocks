@@ -49,82 +49,60 @@ _GetNextSramInstruction:
 ; Returns: ii ii - Amount to advance the index
 GetInstructionJumpTable:
 	dc.w	GetReplaceInstruction - GetInstructionJumpTable
-	dc.w    GetRleXInstruction - GetInstructionJumpTable
-	dc.w	GetRleYInstruction - GetInstructionJumpTable
-	dc.w	GetRleZInstruction - GetInstructionJumpTable
+	dc.w    GetRleInstruction - GetInstructionJumpTable
+	dc.w	GetRleInstruction - GetInstructionJumpTable
+	dc.w	GetRleInstruction - GetInstructionJumpTable
 	dc.w    GetFloodFillInstruction - GetInstructionJumpTable
 
-GetReplaceInstruction:
-	move.l	#0, -(sp)		; Allocate long for load options
-
-	EnableSram
-	ReadSramWord 4+4(sp)
-	DisableSram
-
-	move.w	d0, 2(sp)		; Overlay word from SRAM onto local allocation
-	move.l  6+4(sp), a0
-	move.l	(sp), (a0)		; Move local allocation onto the external allocation
-
-	PopStack 4
-	move.w	#INSTR_SIZE_REPLACE, d0
-	rts
-
-	macro GetRleInstruction
-		move.l	#0, -(sp)		; Allocate long for load options
-
-		EnableSram
-
-		ReadSramByte 4+4(sp)
-		move.b	d0, 1(sp)		; Overlay byte from SRAM onto local allocation
-
-		addi.w	#1, 4+4(sp)		; Increment SRAM position by one byte
-
-		ReadSramWord 4+4(sp)
-		move.w  d0, 2(sp)		; Overlay word from SRAM onto local allocation
-
-		DisableSram
-
-		move.l  6+4(sp), a0
-		move.l	(sp), (a0)		; Move local allocation onto the external allocation
-
-		PopStack 4
+	macro GetReplaceInstructionSize
+		move.w	#INSTR_SIZE_REPLACE, d0
 	endm
 
-GetRleXInstruction:
-	GetRleInstruction
-	move.w	#INSTR_SIZE_RLE_X, d0
+	macro GetRleInstructionSize
+		move.w	#INSTR_SIZE_RLE, d0
+	endm
+
+	macro GetFloodFillInstructionSize
+		move.w	#INSTR_SIZE_FLOOD_FILL, d0
+	endm
+
+GetReplaceInstruction:
+	EnableSram
+	ReadSramWord 4(sp)
+	DisableSram
+
+	move.l  6(sp), a0
+	move.w	d0, 2(a0)		; Overlay word from SRAM onto external allocation
+
+	GetReplaceInstructionSize
 	rts
 
-GetRleYInstruction:
-	GetRleInstruction
-	move.w	#INSTR_SIZE_RLE_Y, d0
-	rts
+GetRleInstruction:
+	EnableSram
 
-GetRleZInstruction:
-	GetRleInstruction
-	move.w	#INSTR_SIZE_RLE_Z, d0
+	ReadSramByte 4(sp)
+	move.l  6(sp), a0
+	move.b	d0, 1(a0)		; Overlay byte from SRAM onto external allocation
+
+	addi.w	#1, 4(sp)		; Increment SRAM position by one byte
+
+	ReadSramWord 4(sp)
+	move.l  6(sp), a0
+	move.w  d0, 2(a0)		; Overlay word from SRAM onto external allocation
+
+	DisableSram
+	GetRleInstructionSize
 	rts
 
 GetFloodFillInstruction:
-	move.l	#0, -(sp)		; Allocate long for load options
-
 	EnableSram
-
-	ReadSramWord 4+4(sp)
-	move.w	d0, (sp)		; Overlay word from SRAM onto local allocation
-
-	addi.w	#2, 4+4(sp)		; Increment SRAM position by 2 bytes
-
-	ReadSramWord 4+4(sp)
-	move.w  d0, 2(sp)		; Overlay word from SRAM onto local allocation
-
+	ReadSramLong 4(sp)
 	DisableSram
 
-	move.l  6+4(sp), a0
-	move.l	(sp), (a0)		; Move local allocation onto the external allocation
+	move.l 6(sp), a0
+	move.l d0, (a0)				; Overlay long from SRAM onto external allocation
 
-	PopStack 4
-	move.w	#INSTR_SIZE_FLOOD_FILL, d0
+	GetFloodFillInstructionSize
 	rts
 
 	endif
