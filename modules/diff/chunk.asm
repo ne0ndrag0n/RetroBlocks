@@ -3,6 +3,15 @@ H_DIFF_CHUNK = 1
 
 	include 'modules/helpers/stack.asm'
 
+	macro IsSameChunk
+		move.w	\4, -(sp)
+		move.w	\3, -(sp)
+		move.w  \2, -(sp)
+		move.w  \1, -(sp)
+		jsr DiffIsSameChunk
+		PopStack 8
+	endm
+
 ; Determine if two coordinate triplets fall within the same diff chunk
 ; If x, y, and z divided by CHUNK_SIZE are the same for both triplets,
 ; they are in the same chunk.
@@ -12,7 +21,7 @@ H_DIFF_CHUNK = 1
 ; 00 z2
 ; Returns: 00 re
 ;             re - 0 if false, 1 if true
-IsSameChunk:
+DiffIsSameChunk:
 	SetupFramePointer
 	Allocate #2
 

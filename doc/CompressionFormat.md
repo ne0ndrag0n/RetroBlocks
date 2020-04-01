@@ -17,14 +17,18 @@ data... - The block data
 
 ## Block Operations
 
-### 00: Simple Block Replace
+### 00: Stop
+Data: None
+This block operation signals the end of the SRAM instruction stream.
+
+### 01: Simple Block Replace
 Data: [ cc bb ]
 cc - Block options (lower 7 bits)
 bb - Block ID
 
 Replaces the block at x, y, z with block id "bb" and state "cc". The uppermost bit of "cc" is reserved (for marking in active chunks during compression)
 
-### 01: Run-Length Decode, X
+### 02: Run-Length Decode, X
 Data: [ rr ] [ cc bb ]
 rr - Run count (Up to 16 in any direction)
 cc - Block options (lower 7 bits)
@@ -32,7 +36,7 @@ bb - Block ID
 
 Replaces block at x, y, z with block id "bb" and state "cc". Then, for a count of run "rr", the operation is repeated in the X+ direction.
 
-### 02: Run-Length Decode, Y
+### 03: Run-Length Decode, Y
 Data: [ rr ] [ cc bb ]
 rr - Run count (Up to 16 in any direction)
 cc - Block options (lower 7 bits)
@@ -40,7 +44,7 @@ bb - Block ID
 
 Replaces block at x, y, z with block id "bb" and state "cc". Then, for a count of run "rr", the operation is repeated in the Y+ direction.
 
-### 03: Run-Length Decode, Z
+### 04: Run-Length Decode, Z
 Data: [ rr ] [ cc bb ]
 rr - Run count (Up to 16 in any direction)
 cc - Block options (lower 7 bits)
@@ -48,7 +52,7 @@ bb - Block ID
 
 Replaces block at x, y, z with block id "bb" and state "cc". Then, for a count of run "rr", the operation is repeated in the Z+ direction.
 
-### 04: Flood Fill
+### 05: Flood Fill
 Data: (boundary)[ cc bb ] [ cc bb ]
 Boundary block and target block:
 cc - Block options (lower 7 bits)

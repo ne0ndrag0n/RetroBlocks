@@ -17,7 +17,8 @@ H_WORLDGEN = 1
 ;          cc - Status (0 for no result, 1 for result)
 ;          dd dd - If Status is 1, dd dd contains the substitution for this location.
 FindDiff:
-	; TODO
+	; TODO - use SramContainsDiff on the coordinate to see if an instruction impacts it
+	; If it does...use additional methods to determine what block that is exactly.
 	rts
 
 ; This is a test worldgen. The "flat" worldgen will create a world with the following characteristics:
