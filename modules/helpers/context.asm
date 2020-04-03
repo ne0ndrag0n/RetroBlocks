@@ -2,17 +2,13 @@
 H_HELPERS_CONTEXT = 1
 
   macro ContextSave
-    move.l  d0, -(sp)
-    move.l  d1, -(sp)
-    move.l  a0, -(sp)
-    move.l  a1, -(sp)
+    movem.l d0-d7/a0-a6, -(sp)
+    move.w  sr, -(sp)
   endm
 
   macro ContextRestore
-    move.l  (sp)+, a1
-    move.l  (sp)+, a0
-    move.l  (sp)+, d1
-    move.l  (sp)+, d0
+    move.w  (sp)+, sr
+    movem.l (sp)+, d0-d7/a0-a6
   endm
 
   endif

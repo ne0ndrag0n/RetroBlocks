@@ -1,5 +1,6 @@
  include 'modules/z80/constants.asm'
  include 'modules/interrupts/constants.asm'
+ include 'modules/threader/mod.asm'
 
 Start:
 	DisableInterrupts
@@ -54,4 +55,5 @@ InitEcho:
   lea     SndPointerList, a0
   bsr.w   Echo_Init
 
+	ThreaderInit
 	EnableInterrupts

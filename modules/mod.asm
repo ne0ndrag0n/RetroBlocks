@@ -10,3 +10,5 @@
  include 'modules/timer/mod.asm'
  include 'modules/sram/mod.asm'
  include 'modules/worldgen/mod.asm'
+ include 'modules/threader/mod.asm'
+ include 'modules/gameplay/mod.asm'
