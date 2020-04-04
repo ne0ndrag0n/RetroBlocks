@@ -31,10 +31,7 @@ VBlank:
   include 'modules/helpers/context.asm'
   DisableInterrupts
 
-    printt "Debug here"
-Label:
-    printv  Label
-    jmp ThreaderUpdate
+  jmp ThreaderUpdate
 
 VBlank_Update:
   QuickContextSave
