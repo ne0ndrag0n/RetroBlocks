@@ -30,11 +30,11 @@ WriteVDPNametableLocation:
   move.l  #$0, d0                       ; clear d0 and d1
   move.l  #$0, d1
 
-  ; 2( VDP_PLANE_CELLS_H * yy ) + xx
+  ; 2( VDP_TITLESCREEN_PLANE_CELLS_H * yy ) + xx
 
   move.b  5(sp), d0                     ; move yy into d0
 
-  mulu.w  #(VDP_PLANE_CELLS_H), d0      ; yy * VDP_PLANE_CELLS_H
+  mulu.w  #(VDP_TITLESCREEN_PLANE_CELLS_H), d0      ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
 
   move.b  4(sp), d1
   add.w   d1, d0                        ; + xx

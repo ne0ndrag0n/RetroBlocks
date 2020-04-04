@@ -4,7 +4,7 @@ H_STATIC_VDP_CONSTANTS = 1
   ; 0 = 128 for any given sprite value
   ; To go from real to retarded sprite coordinates, add 128/$80
 
-  macro VDPDefineRegisterConstant
+  macro VdpDefineRegisterConstant
     dc.w ( ( $80 + \1 ) << 8 ) | \2
   endm
 
@@ -52,44 +52,6 @@ H_STATIC_VDP_CONSTANTS = 1
     jsr DrawText
     PopStack 6
   endm
-
-; VDP is currently structured to be fully static
-VDP_PLANE_A=$C000
-VDP_PLANE_B=$E000
-VDP_WINDOW=$D000
-VDP_SPRITES=$B800
-VDP_SPRITE_METADATA=VDP_SPRITES - 16
-VDP_HSCROLL=$BC00
-VDP_PLANE_CELLS_H=64
-VDP_PLANE_CELLS_V=32
-
-  if VDP_PLANE_CELLS_H == 32
-VDP_CELL_X = $00
-  else
-  if VDP_PLANE_CELLS_H == 64
-VDP_CELL_X = $01
-  else
-  if VDP_PLANE_CELLS_H == 128
-VDP_CELL_X = $11
-  else
-  fail "VDP_PLANE_CELLS_H must be one of 32, 64, or 128"
-  endif
-  endif
-  endif
-
-  if VDP_PLANE_CELLS_V == 32
-VDP_CELL_Y = $00
-  else
-  if VDP_PLANE_CELLS_V == 64
-VDP_CELL_Y = $01
-  else
-  if VDP_PLANE_CELLS_V == 128
-VDP_CELL_Y = $11
-  else
-  fail "VDP_PLANE_CELLS_V must be one of 32, 64, or 128"
-  endif
-  endif
-  endif
 
 ; VDP access modes
 VDP_CRAM_READ=$20000000

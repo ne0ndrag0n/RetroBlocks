@@ -56,7 +56,7 @@ BlitPattern:
 
   move.b  5(sp), d2                   ; move yy into d2
 
-  mulu.w  #VDP_PLANE_CELLS_H, d2      ; yy * VDP_PLANE_CELLS_H
+  mulu.w  #VDP_TITLESCREEN_PLANE_CELLS_H, d2      ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
 
   move.b  4(sp), d0
   add.w   d0, d2                      ; + xx
@@ -115,7 +115,7 @@ BlitPattern_ForEachWW:
   bra.s   BlitPattern_ForEachWW
 BlitPattern_ForEachWWEnd:
 
-  move.w  #( $0000 | VDP_PLANE_CELLS_H ), d0      ; advance d2 by (row * 2)
+  move.w  #( $0000 | VDP_TITLESCREEN_PLANE_CELLS_H ), d0      ; advance d2 by (row * 2)
   lsl.w   #1, d0
   add.w   d0, d2
 
@@ -140,7 +140,7 @@ BlitFill:
 
   move.b  9(sp), d2                   ; move yy into d2
 
-  mulu.w  #VDP_PLANE_CELLS_H, d2      ; yy * VDP_PLANE_CELLS_H
+  mulu.w  #VDP_TITLESCREEN_PLANE_CELLS_H, d2      ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
 
   move.b  8(sp), d0
   add.w   d0, d2                      ; + xx
@@ -186,7 +186,7 @@ BlitFill_ForEachWW:
   bra.s BlitFill_ForEachWW
 BlitFill_ForEachWWEnd:
 
-  move.w  #( $0000 | VDP_PLANE_CELLS_H ), d0      ; advance d2 by (row * 2)
+  move.w  #( $0000 | VDP_TITLESCREEN_PLANE_CELLS_H ), d0      ; advance d2 by (row * 2)
   lsl.w   #1, d0
   add.w   d0, d2
 

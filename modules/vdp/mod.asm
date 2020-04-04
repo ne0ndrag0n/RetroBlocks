@@ -10,5 +10,6 @@ H_STATIC_VDP_MOD = 1
  include 'modules/vdp/dma.asm'
  include 'modules/vdp/palette.asm'
  include 'modules/vdp/sprites.asm'
+ include 'modules/vdp/states.asm'
 
  endif

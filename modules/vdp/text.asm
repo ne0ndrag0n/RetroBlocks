@@ -4,9 +4,9 @@ H_STATIC_VDP_TEXT = 1
 ; Coordinates: xx yy
 ; String address: ss ss ss ss
 DrawText:
-  ; DrawText works with VDP_PLANE_A exclusively
+  ; DrawText works with VDP_TITLESCREEN_PLANE_A exclusively
   move.w  #$0000, -(sp)
-  move.w  #VDP_PLANE_A, -(sp)             ; Push plane addr
+  move.w  #VDP_TITLESCREEN_PLANE_A, -(sp)             ; Push plane addr
   move.w  8(sp), -(sp)                    ; Copy coordinates
   jsr WriteVDPNametableLocation
   move.l  sp, d0

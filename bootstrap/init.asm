@@ -1,6 +1,7 @@
  include 'modules/z80/constants.asm'
  include 'modules/interrupts/constants.asm'
  include 'modules/threader/mod.asm'
+ include 'modules/vdp/mod.asm'
 
 Start:
 	move.w	#$2700, sr			; Set baseline registers for SR
@@ -28,13 +29,7 @@ InitController:
   move.b #$40, (ACCESSORY_DATA)
 
 	ReturnZ80Bus
-
-InitVDP:
-	lea 		(VDPInitData), a0
-	move.w	#( (VDPInitDataEnd - VDPInitData)/2 ) - 1, d1
-InitVDPDataLoop:
-	move.w	(a0)+, (VDP_CONTROL)
-	dbf			d1, InitVDPDataLoop
+	VdpSendCommandList #VdpTitlescreenState, #( (VdpTitlescreenState_End - VdpTitlescreenState)/2 ) - 1
 
 ClearCRAM:
 	move.l  #VDP_CRAM_WRITE,(VDP_CONTROL)

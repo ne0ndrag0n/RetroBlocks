@@ -36,10 +36,10 @@ SPRITE_HFLIP=$0800
   endm
 
   macro SpriteIndexToVram
-    ;(VDP_SPRITES + ( 8 * index ))
+    ;(VDP_TITLESCREEN_SPRITES + ( 8 * index ))
     move.w  \1, d1            ; 8 * index
     mulu.w  #8, d1
-    addi.w  #VDP_SPRITES, d1  ; + VDP_SPRITES
+    addi.w  #VDP_TITLESCREEN_SPRITES, d1  ; + VDP_TITLESCREEN_SPRITES
   endm
 
   macro VdpSetSpritePositionX
@@ -73,7 +73,7 @@ NewSprite_Allocate:
   move.l  d0, d1              ; Save the original return value
 
   mulu.w  #8, d0              ; 8 * index
-  addi.w  #VDP_SPRITES, d0    ; + VDP_SPRITES
+  addi.w  #VDP_TITLESCREEN_SPRITES, d0    ; + VDP_TITLESCREEN_SPRITES
 
   move.l  d1, -(sp)
 
@@ -112,7 +112,7 @@ NewSprite_Allocate:
   beq.s   NewSprite_Return
 
   mulu.w  #8, d2              ; index * 8
-  addi.w  #VDP_SPRITES, d2    ; + VDP_SPRITES
+  addi.w  #VDP_TITLESCREEN_SPRITES, d2    ; + VDP_TITLESCREEN_SPRITES
   addi.w  #2, d2              ; + 2, to get at the link attribute
 
   move.l  d2, -(sp)
