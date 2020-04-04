@@ -1,6 +1,6 @@
  ifnd H_STATIC_VDP_NAMETABLE
 H_STATIC_VDP_NAMETABLE = 1
-  include 'modules/vdp_static/util.asm'
+  include 'modules/vdp/util.asm'
 
   macro VdpBlitRepeatingPattern
     move.w  \6, -(sp)
