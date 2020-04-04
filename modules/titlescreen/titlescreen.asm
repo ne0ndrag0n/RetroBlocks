@@ -18,8 +18,6 @@ LoadTitlescreen:
   ; Draw text items
   VdpDrawText #$0001, #String_Concordia
   VdpDrawText #$0C02, #String_Version
-
-TitlescreenMain:
-  bra.s TitlescreenMain
+  rts
 
   endif

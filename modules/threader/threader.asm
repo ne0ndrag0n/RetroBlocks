@@ -3,14 +3,20 @@ H_THREADER = 1
 
 ; Set up the process control blocks (PCBs) for both game threads.
 	macro ThreaderInit
-		move.w	#THREAD_MAIN_STACK, (THREADER_MAIN_CONTEXT_SR)	; Set the stack pointers for each thread
-		move.w	#THREAD_BACK_STACK, (THREADER_BACK_CONTEXT_SR)
+		move.w	#THREAD_MAIN_STACK, (THREADER_MAIN_CONTEXT + THREADER_PCB_REGS + 4 + 2)	; Set the stack pointers for each thread
+		move.w	#THREAD_BACK_STACK, (THREADER_BACK_CONTEXT + THREADER_PCB_REGS + 4 + 2)
 
-		move.b  #THREAD_MAIN_TICKS, (THREADER_MAIN_PRIORITY_SETTING) 	; Main thread runs for 2/3 of the time
-		move.b	#THREAD_BACK_TICKS, (THREADER_BACK_PRIORITY_SETTING) 	; Background thread runs 1/3 of the time
+		move.w	#$2000, (THREADER_MAIN_CONTEXT + THREADER_PCB_REGS + 4)		; Set default $2000 SR for both threads
+		move.w  #$2000, (THREADER_BACK_CONTEXT + THREADER_PCB_REGS + 4)
 
-		move.b	#THREAD_MAIN_TICKS, (THREADER_REMAINING_TICKS)  		; Set the state of the thread engine up for the foreground thread
-		move.b	#THREAD_BACK, (THREADER_NEXT_CONTEXT)	; Start with main, and background thread will be jumped into
+		move.b  #THREAD_MAIN_TICKS, (THREADER_MAIN_PRIORITY_SETTING) 		; Main thread runs for 2/3 of the time
+		move.b	#THREAD_BACK_TICKS, (THREADER_BACK_PRIORITY_SETTING) 		; Background thread runs 1/3 of the time
+
+		move.b	#THREAD_MAIN_TICKS, (THREADER_REMAINING_TICKS)  			; Set the state of the thread engine up for the foreground thread
+		move.b	#THREAD_BACK, (THREADER_NEXT_CONTEXT)						; Background thread will follow
+
+		move.l	#RenderThread, (THREADER_MAIN_CONTEXT + THREADER_PCB_REGS)	; Set the thread PCs
+		move.l  #UpdateThread, (THREADER_BACK_CONTEXT + THREADER_PCB_REGS)
 	endm
 
 	macro SaveContext
@@ -38,9 +44,11 @@ ThreaderUpdate:
 	tst.b	(THREADER_REMAINING_TICKS)		; If there are no remaining ticks
 	beq.s	ThreaderUpdate_SwapContext		; Switch context
 
-	move.b  (THREADER_REMAINING_TICKS), d0	; Otherwise, take a tick off and return
+	move.l	d0, -(sp)						; We haven't yet contextsaved the registers in vblank
+	move.b  (THREADER_REMAINING_TICKS), d0	; Take a tick off and return if there are still remaining ticks
 	subi.b  #1, d0
 	move.b  d0, (THREADER_REMAINING_TICKS)
+	move.l	(sp)+, d0						; Restore d0 to its original value
 	jmp		VBlank_Update
 
 ThreaderUpdate_SwapContext:
@@ -52,13 +60,13 @@ ThreaderUpdate_SwitchToMain:
 	move.b	(THREADER_MAIN_PRIORITY_SETTING), (THREADER_REMAINING_TICKS)		; Set main number of ticks as remaining ticks
 	SaveContext	THREADER_BACK_CONTEXT
 	LoadContext THREADER_MAIN_CONTEXT
-	jmp VBlank_Update
+	jmp VBlank_Finally
 
 ThreaderUpdate_SwitchToBackground:
 	move.b	#THREAD_MAIN, (THREADER_NEXT_CONTEXT)								; The thread that follows back is the main thread
 	move.b	(THREADER_BACK_PRIORITY_SETTING), (THREADER_REMAINING_TICKS)		; Set back number of ticks as remaining ticks
 	SaveContext	THREADER_MAIN_CONTEXT
 	LoadContext THREADER_BACK_CONTEXT
-	jmp VBlank_Update
+	jmp VBlank_Finally
 
 	endif

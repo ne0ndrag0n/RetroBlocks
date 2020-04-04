@@ -5,7 +5,7 @@
   include 'bootstrap/headers.asm'
   include 'bootstrap/init.asm'
 
-  jmp LoadTitlescreen
+  jmp RenderThread
 
 BusError:
   rte
@@ -26,20 +26,24 @@ HBlank:
   rte
 
 VBlank:
+  ; FIXME: This VBlank handler will skip updating joypad status if a thread needs to be swapped
+  ; This may create problems with joypad responsiveness
   include 'modules/helpers/context.asm'
-  ContextSave
   DisableInterrupts
 
-  ; vblank stuff goes here
-VBlank_Threader:
-  ; jmp ThreaderUpdate
+    printt "Debug here"
+Label:
+    printv  Label
+    jmp ThreaderUpdate
+
 VBlank_Update:
+  QuickContextSave
   jsr UpdateTicks
   jsr JoypadVBlank
+  QuickContextRestore
 
-VBlank_End:
+VBlank_Finally:
   EnableInterrupts
-  ContextRestore
   rte
 
   include 'lib/echo.asm'

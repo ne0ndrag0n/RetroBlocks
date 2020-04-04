@@ -3,6 +3,7 @@
  include 'modules/threader/mod.asm'
 
 Start:
+	move.w	#$2700, sr			; Set baseline registers for SR
 	DisableInterrupts
 
 SecurityCheck:
