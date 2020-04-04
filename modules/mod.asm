@@ -2,7 +2,7 @@
  include 'modules/diff/mod.asm'
  include 'modules/helpers/mod.asm'
  include 'modules/interrupts/mod.asm'
- include 'modules/static_vdp/mod.asm'
+ include 'modules/vdp_static/mod.asm'
  include 'modules/joypad/mod.asm'
  include 'modules/z80/mod.asm'
  include 'modules/titlescreen/mod.asm'
