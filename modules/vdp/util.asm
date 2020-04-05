@@ -24,27 +24,28 @@ VDP_DMA_VRAM_FILL=$80
 
 ; xx yy - Tile index
 ; pp pp - Plane nametable VRAM address
+; 00 hh - Horizontal dimension of nametable
 ; 00 ss - Status, in bits: 0000 0000 for vram write, 0000 0001 for vram read, 1000 0000 for DMA
 ; Returns: Computed nametable address
 WriteVDPNametableLocation:
   move.l  #$0, d0                       ; clear d0 and d1
   move.l  #$0, d1
 
-  ; 2( VDP_TITLESCREEN_PLANE_CELLS_H * yy ) + xx
+  ; 2( hh * yy ) + xx
 
   move.b  5(sp), d0                     ; move yy into d0
 
-  mulu.w  #(VDP_TITLESCREEN_PLANE_CELLS_H), d0      ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
+  mulu.w  8(sp), d0                     ; yy * hh
 
   move.b  4(sp), d1
   add.w   d1, d0                        ; + xx
 
-  mulu.w  #$0002, d0                    ; times 2
+  lsl.w   #1, d0                        ; times 2
                                         ; d0 now contains cell number
 
   add.w   6(sp), d0                     ; d0 now contains address
 
-  move.w  8(sp), -(sp)                  ; Copy status
+  move.w  10(sp), -(sp)                 ; Copy status
   move.l  d0, -(sp)                     ; push vram address onto stack
   bsr.s   ComputeVdpDestinationAddress
   PopStack 6

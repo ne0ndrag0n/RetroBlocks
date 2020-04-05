@@ -11,16 +11,17 @@ H_STATIC_VDP_TEXT = 1
     PopStack 8
   endm
 
+; This debug method is configured for a 64-column nametable only!
 ; Coordinates: xx yy
 ; Plane: pp pp
 ; String address: ss ss ss ss
 DrawText:
-  ; DrawText works with VDP_TITLESCREEN_PLANE_A exclusively
   move.w  #$0000, -(sp)
-  move.w  6 + 2(sp), -(sp)                ; Copy plane addr
-  move.w  4 + 2 + 2(sp), -(sp)            ; Copy coordinates
+  move.w  #64, -(sp)
+  move.w  6 + 2 + 2(sp), -(sp)            ; Copy plane addr
+  move.w  4 + 2 + 2 + 2(sp), -(sp)        ; Copy coordinates
   jsr WriteVDPNametableLocation
-  PopStack 6
+  PopStack 8
 
   move.l  8(sp), a0                       ; Load string address into a0
 
