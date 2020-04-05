@@ -16,8 +16,8 @@ LoadTitlescreen:
   VdpBlitPattern #$0000, #$281C, #TS_BG_LOCATION, #VDP_TITLESCREEN_PLANE_B, #$0020 ; Draw the background
 
   ; Draw text items
-  VdpDrawText #$0001, #String_Concordia
-  VdpDrawText #$0C02, #String_Version
+  VdpDrawText #$0001, #VDP_TITLESCREEN_PLANE_A, #String_Concordia
+  VdpDrawText #$0C02, #VDP_TITLESCREEN_PLANE_A, #String_Version
   rts
 
   endif

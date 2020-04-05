@@ -1,19 +1,28 @@
  ifnd H_STATIC_VDP_TEXT
 H_STATIC_VDP_TEXT = 1
 
+  include 'modules/helpers/stack.asm'
+
+  macro VdpDrawText
+    move.l  \3, -(sp)
+    move.w  \2, -(sp)
+    move.w  \1, -(sp)
+    jsr DrawText
+    PopStack 8
+  endm
+
 ; Coordinates: xx yy
+; Plane: pp pp
 ; String address: ss ss ss ss
 DrawText:
   ; DrawText works with VDP_TITLESCREEN_PLANE_A exclusively
   move.w  #$0000, -(sp)
-  move.w  #VDP_TITLESCREEN_PLANE_A, -(sp)             ; Push plane addr
-  move.w  8(sp), -(sp)                    ; Copy coordinates
+  move.w  6 + 2(sp), -(sp)                ; Copy plane addr
+  move.w  4 + 2 + 2(sp), -(sp)            ; Copy coordinates
   jsr WriteVDPNametableLocation
-  move.l  sp, d0
-  addi.l  #6, d0
-  move.l  d0, sp                          ; Pop coords after writing VDP word
+  PopStack 6
 
-  move.l 6(a7), a0                        ; Load string address into a0
+  move.l  8(sp), a0                       ; Load string address into a0
 
   move.w  #$0, d0                         ; Clear up d0 so we can write a whole word to VDP
 

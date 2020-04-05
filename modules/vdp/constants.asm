@@ -36,23 +36,6 @@ H_STATIC_VDP_CONSTANTS = 1
     PopStack 8
   endm
 
-  macro VdpBlitPattern
-    move.w  \5, -(sp)
-    move.w  \4, -(sp)
-    move.w  \3, -(sp)
-    move.w  \2, -(sp)
-    move.w  \1, -(sp)
-    jsr BlitPattern
-    PopStack 10
-  endm
-
-  macro VdpDrawText
-    move.l  \2, -(sp)
-    move.w  \1, -(sp)
-    jsr DrawText
-    PopStack 6
-  endm
-
 ; VDP access modes
 VDP_CRAM_READ=$20000000
 VDP_CRAM_WRITE=$C0000000
