@@ -47,7 +47,7 @@ BlitPattern:
 
   move.b  5(sp), d2                   ; move yy into d2
 
-  mulu.w  12(sp), d2                  ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
+  mulu.w  12(sp), d2                  ; yy * pw
 
   move.b  4(sp), d0
   add.w   d0, d2                      ; + xx
