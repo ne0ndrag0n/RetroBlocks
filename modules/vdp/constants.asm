@@ -21,21 +21,6 @@ H_STATIC_VDP_CONSTANTS = 1
     move.w  d1, (VDP_CONTROL)
   endm
 
-  macro VdpLoadPaletteDma
-    move.l  \2, -(sp)
-    move.w  \1, -(sp)
-    jsr LoadPaletteDma
-    PopStack 6
-  endm
-
-  macro VdpLoadPatternDma
-    move.l  \3, -(sp)
-    move.w  \2, -(sp)
-    move.w  \1, -(sp)
-    jsr LoadPatternDma
-    PopStack 8
-  endm
-
 ; VDP access modes
 VDP_CRAM_READ=$20000000
 VDP_CRAM_WRITE=$C0000000

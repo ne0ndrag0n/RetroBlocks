@@ -1,6 +1,14 @@
  ifnd H_STATIC_VDP_PATTERN
 H_STATIC_VDP_PATTERN = 1
 
+  macro VdpLoadPatternDma
+    move.l  \3, -(sp)
+    move.w  \2, -(sp)
+    move.w  \1, -(sp)
+    jsr LoadPatternDma
+    PopStack 8
+  endm
+
 ; ii ii - desired index of tile (later turned into destination address)
 ; nn nn - Number of 8x8 tiles to copy
 ; aa aa aa aa - Address of source data

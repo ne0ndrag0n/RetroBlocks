@@ -1,6 +1,13 @@
   ifnd H_STATIC_VDP_PALETTE
 H_STATIC_VDP_PALETTE = 1
 
+  macro VdpLoadPaletteDma
+    move.l  \2, -(sp)
+    move.w  \1, -(sp)
+    jsr LoadPaletteDma
+    PopStack 6
+  endm
+
 ; 00 pp - Palette index (0-3) -> 00, 20, 40, 60
 ; aa aa aa aa - Source address of palette data
 LoadPaletteDma:

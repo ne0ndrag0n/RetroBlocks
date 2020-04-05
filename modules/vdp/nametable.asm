@@ -9,13 +9,14 @@ H_STATIC_VDP_NAMETABLE = 1
   endm
 
   macro VdpBlitPattern
+    move.w  \6, -(sp)
     move.w  \5, -(sp)
     move.w  \4, -(sp)
     move.w  \3, -(sp)
     move.w  \2, -(sp)
     move.w  \1, -(sp)
     jsr BlitPattern
-    PopStack 10
+    PopStack 12
   endm
 
 VDP_TILE_ATTR_PAL0 = $00
@@ -29,6 +30,7 @@ VDP_TILE_ATTR_PRIORITY = $80
 ; ww hh - Width and height of pattern
 ; rr rr - Root pattern index (8x8 numeric index, not address)
 ; pp pp - Root plane address
+; pw pw - Plane width
 ; 00 aa - Tile attribute (priority (1), palette (2), vflip (1), hflip (1))
 BlitPattern:
   ; calculate vdp nametable address using [pp pp] and [xx yy]
@@ -45,7 +47,7 @@ BlitPattern:
 
   move.b  5(sp), d2                   ; move yy into d2
 
-  mulu.w  #VDP_TITLESCREEN_PLANE_CELLS_H, d2      ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
+  mulu.w  12(sp), d2                  ; yy * VDP_TITLESCREEN_PLANE_CELLS_H
 
   move.b  4(sp), d0
   add.w   d0, d2                      ; + xx
@@ -88,7 +90,7 @@ BlitPattern_ForEachWW:
 
   subi.b  #$01, d1                    ; d1--
 
-  move.w  12(sp), d0                  ; d0 = aa << 8
+  move.w  14(sp), d0                  ; d0 = aa << 8
   lsl.w   #$07, d0
   lsl.w   #$01, d0
 
@@ -104,7 +106,7 @@ BlitPattern_ForEachWW:
   bra.s   BlitPattern_ForEachWW
 BlitPattern_ForEachWWEnd:
 
-  move.w  #( $0000 | VDP_TITLESCREEN_PLANE_CELLS_H ), d0      ; advance d2 by (row * 2)
+  move.w  12(sp), d0      ; advance d2 by (row * 2)
   lsl.w   #1, d0
   add.w   d0, d2
 
