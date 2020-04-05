@@ -38,7 +38,13 @@ ClearCRAMLoop:
 	move.w  #$0000, (VDP_DATA)
 	dbf			d1, ClearCRAMLoop
 
-	bsr.w		ClearVRAM
+; Clear VRAM top to bottom
+ClearVramInit:
+  move.l  #VDP_VRAM_WRITE,(VDP_CONTROL)
+  move.w  #$7FFF, d1
+ClearVramInit_Loop:
+  move.w  #$0000, (VDP_DATA)
+  dbf     d1, ClearVramInit_Loop
 
 ClearRAM:
 	lea			RAM_START, a0

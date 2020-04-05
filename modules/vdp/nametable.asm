@@ -116,14 +116,14 @@ BlitPattern_ForEachHHEnd:
 
 ; pp pp - Root plane address
 ErasePlane:
-  VDPSetRegister 15, 1                  ; Increment per byte
+  VdpSetRegister 15, 1                  ; Increment per byte
 
-  VDPSetRegister 20, $10                ; $1000 bytes
-  VDPSetRegister 19, $00
+  VdpSetRegister 20, $10                ; $1000 bytes
+  VdpSetRegister 19, $00
 
-  VDPSetRegister 23, $80                ; I think we need to set this?
-  VDPSetRegister 22, $00
-  VDPSetRegister 21, $00
+  VdpSetRegister 23, $80                ; I think we need to set this?
+  VdpSetRegister 22, $00
+  VdpSetRegister 21, $00
 
   move.l  #0, d0                        ; Construct argument for VdpComputeDestinationAddress
   move.w  4(sp), d0
@@ -135,7 +135,7 @@ ErasePlane:
   move.l  d0, (VDP_CONTROL)             ; Do the DMA
   move.w  #0, (VDP_DATA)                ; VRAM fill of $0800 "0000" words to the specified plane
 
-  VDPSetRegister 15, 2                  ; Put it back - Most static VDP operations assume word increment
+  VdpSetRegister 15, 2                  ; Put it back - Most static VDP operations assume word increment
   rts
 
  endif

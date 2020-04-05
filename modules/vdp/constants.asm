@@ -4,23 +4,6 @@ H_STATIC_VDP_CONSTANTS = 1
   ; 0 = 128 for any given sprite value
   ; To go from real to retarded sprite coordinates, add 128/$80
 
-  macro VdpDefineRegisterConstant
-    dc.w ( ( $80 + \1 ) << 8 ) | \2
-  endm
-
-  macro VDPSetRegister
-    move.w #( ( ( $80 + \1 ) << 8 ) | \2 ), (VDP_CONTROL)
-  endm
-
-  macro VDPSetRegisterRuntime
-    move.w  #$0080, d1
-    addi.w  #\1, d1
-    lsl.w   #7, d1
-    lsl.w   #1, d1
-    or.b    \2, d1
-    move.w  d1, (VDP_CONTROL)
-  endm
-
 ; VDP access modes
 VDP_CRAM_READ=$20000000
 VDP_CRAM_WRITE=$C0000000
@@ -50,5 +33,8 @@ VDP_PAL_0=$00
 VDP_PAL_1=$20
 VDP_PAL_2=$40
 VDP_PAL_3=$60
+
+VDP_DMA_ENABLED  = $74
+VDP_DMA_DISABLED = $64
 
  endif

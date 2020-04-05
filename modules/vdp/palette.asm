@@ -13,8 +13,8 @@ H_STATIC_VDP_PALETTE = 1
 LoadPaletteDma:
   SetupFramePointer
 
-  VDPSetRegister 20, 0              ; Every palette will DMA 16 words
-  VDPSetRegister 19, 16
+  VdpSetRegister 20, 0              ; Every palette will DMA 16 words
+  VdpSetRegister 19, 16
 
   VdpWriteDmaSourceAddress 6(fp)
 

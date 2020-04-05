@@ -26,12 +26,12 @@ LoadPatternDma:
   lsr.w   #7, d0            ; >> 8
   lsr.w   #1, d0
 
-  VDPSetRegisterRuntime 20, d0
+  VdpSetRegisterRuntime 20, d0
 
   move.w  6(fp), d0         ; Take only the bottom bits for register 19
   andi.w  #$00FF, d0
 
-  VDPSetRegisterRuntime 19, d0
+  VdpSetRegisterRuntime 19, d0
 
   VdpWriteDmaSourceAddress  8(fp) ; Copy source address
 

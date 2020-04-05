@@ -40,7 +40,7 @@ VDP_TITLESCREEN_CELL_Y = $11
   endif
 
   VdpDefineRegisterConstant 0, $04                                	; 04=00000100 -> 9-bit palette, everything else disabled
-  VdpDefineRegisterConstant 1, $74                                	; 74=01110100 -> Genesis display mode, DMA & V-int enabled
+  VdpDefineRegisterConstant 1, VDP_DMA_ENABLED                     	; 74=01110100 -> Genesis display mode, DMA & V-int enabled
   VdpDefineRegisterConstant 2, ( VDP_TITLESCREEN_PLANE_A / $400 )   ; Plane A nametable
   VdpDefineRegisterConstant 3, ( VDP_TITLESCREEN_WINDOW / $400 )    ; Window nametable
   VdpDefineRegisterConstant 4, ( VDP_TITLESCREEN_PLANE_B / $2000 )  ; Plane B nametable
@@ -64,7 +64,23 @@ VDP_TITLESCREEN_CELL_Y = $11
 VdpTitlescreenState_End:
 
 VdpGameplayState:
-	; TODO
+VDP_GAMEPLAY_PLANE_A = $C000
+VDP_GAMEPLAY_PLANE_B = $E000
+VDP_GAMEPLAY_WINDOW  = $A000
+VDP_GAMEPLAY_SPRITES = $9E00
+VDP_GAMEPLAY_HSCROLL = $9C00
+
+VDP_GAMEPLAY_PLANE_CELLS_H = 64
+VDP_GAMEPLAY_PLANE_CELLS_V = 64
+VDP_GAMEPLAY_CELL_X = $01
+VDP_GAMEPLAY_CELL_Y = $01
+
+  VdpDefineRegisterConstant 2, ( VDP_GAMEPLAY_PLANE_A / $400 )   ; Plane A nametable
+  VdpDefineRegisterConstant 3, ( VDP_GAMEPLAY_WINDOW / $400 )    ; Window nametable
+  VdpDefineRegisterConstant 4, ( VDP_GAMEPLAY_PLANE_B / $2000 )  ; Plane B nametable
+  VdpDefineRegisterConstant 5, ( VDP_GAMEPLAY_SPRITES / $200 )   ; Sprite nametable
+  VdpDefineRegisterConstant 13, ( VDP_GAMEPLAY_HSCROLL / $400 )  ; Horizontal scroll metadata
+  VdpDefineRegisterConstant 16, ( VDP_GAMEPLAY_CELL_Y << 5 | VDP_GAMEPLAY_CELL_X )  ; Nametables are 64 across and 64 down
 VdpGameplayState_End:
 
 	macro VdpSendCommandList

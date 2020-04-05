@@ -15,6 +15,38 @@ H_STATIC_VDP_UTIL = 1
   PopStack 4
  endm
 
+  macro VdpDefineRegisterConstant
+    dc.w ( ( $80 + \1 ) << 8 ) | \2
+  endm
+
+  macro VdpSetRegisterRuntime
+    move.w  #$0080, d1
+    addi.w  #\1, d1
+    lsl.w   #7, d1
+    lsl.w   #1, d1
+    or.b    \2, d1
+    move.w  d1, (VDP_CONTROL)
+  endm
+
+  macro VdpSetRegister
+    move.w #( ( ( $80 + \1 ) << 8 ) | \2 ), (VDP_CONTROL)
+  endm
+
+ macro VdpEnableDma
+    VdpSetRegister  1, VDP_DMA_ENABLED
+ endm
+
+ macro VdpDisableDma
+    VdpSetRegister  1, VDP_DMA_DISABLED
+ endm
+
+  macro VdpClearVram
+    move.w  \2, -(sp)
+    move.w  \1, -(sp)
+    jsr ClearVram
+    PopStack 4
+  endm
+
 VDP_DEST_VRAM_WRITE=$00
 VDP_DEST_VRAM_READ=$01
 VDP_DEST_CRAM_WRITE=$02
@@ -107,19 +139,19 @@ WriteDmaSourceAddress:
   lsr.l   #7, d0
   lsr.l   #2, d0
 
-  VDPSetRegisterRuntime 23, d0
+  VdpSetRegisterRuntime 23, d0
 
   move.l  4(sp), d0                     ; Write middle byte
   andi.l  #$0000FF00, d0                ; Take only middle bits
   lsr.l   #7, d0                        ; >> 8
   lsr.l   #1, d0
 
-  VDPSetRegisterRuntime 22, d0
+  VdpSetRegisterRuntime 22, d0
 
   move.l  4(sp), d0                     ; Write lower byte
   andi.l  #$000000FF, d0                ; Take only lower byte
 
-  VDPSetRegisterRuntime 21, d0
+  VdpSetRegisterRuntime 21, d0
   rts
 
 ; aa aa - VRAM address
@@ -148,6 +180,24 @@ WriteVramWord:
   move.l  d0, (VDP_CONTROL)
 
   move.w  6(sp), (VDP_DATA)
+  rts
+
+; Clears VRAM beginning at the specified region and lasting until the given count
+; cc cc - Byte clear count
+; oo oo - Origin VRAM address
+ClearVram:
+  move.w  #0, -(sp)
+  move.w  6 + 2(sp), -(sp)
+  move.w  #0, -(sp)
+  jsr ComputeVdpDestinationAddress
+  PopStack 6
+
+  move.l  d0, (VDP_CONTROL)
+
+  move.w  4(sp), d0
+ClearVram_Loop:
+  move.w  #0, (VDP_DATA)
+  dbf.w   d0, ClearVram_Loop
   rts
 
  endif
