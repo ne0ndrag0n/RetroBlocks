@@ -59,10 +59,11 @@ RenderBoard_DiagonalLoop:
 	tst.b	d0				; Nothing to do for air block
 	beq.s	RenderBoard_DiagonalLoop_Finally
 
-	; Allocate space for an 8x8 copy of the target tile
+	; Allocate space for an 8x8 copy of the target tile and its accompanying palette
 	move.l	sp, d0
-	addi.l	#64, d0
-	move.l	d0, sp			; The above local (sp) vars now need 64+ added.
+	addi.l	#32 + 15, d0
+	move.l	d0, sp			; (sp) - palette
+							; 15(sp) - tile
 
 	; Get copy of 8x8 tile out of VRAM
 	; TODO

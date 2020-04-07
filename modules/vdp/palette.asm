@@ -29,4 +29,11 @@ LoadPaletteDma:
   RestoreFramePointer
   rts
 
+; Copy a palette out of CRAM into 68k RAM.
+; 00 pp - Palette index (00, 20, 40, 60)
+; aa aa aa aa - Address of a 16-element word array
+CopyCramPalette:
+  ; TODO!
+  rts
+
   endif
