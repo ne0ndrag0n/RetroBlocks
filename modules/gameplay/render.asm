@@ -14,7 +14,7 @@ RenderThread_VdpSwitch:
 	VdpClearVram		#$F3FF / 2, #$0C00
 	VdpSendCommandList 	#VdpGameplayState, #( (VdpGameplayState_End - VdpGameplayState)/2 ) - 1
 
-	VdpDrawText #$0101, #VDP_TITLESCREEN_PLANE_A, #String_Overworld
+	VdpDrawText #$0000, #VDP_GAMEPLAY_PLANE_A, #String_LongTest
 
 RenderThread_EternalLoop:
 	jmp RenderThread_EternalLoop

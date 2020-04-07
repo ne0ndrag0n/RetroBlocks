@@ -47,6 +47,15 @@ H_STATIC_VDP_UTIL = 1
     PopStack 4
   endm
 
+  macro VdpWriteNametableLocation
+    move.w \4, -(sp)
+    move.w \3, -(sp)
+    move.w \2, -(sp)
+    move.w \1, -(sp)
+    jsr WriteVDPNametableLocation
+    PopStack 8
+  endm
+
 VDP_DEST_VRAM_WRITE=$00
 VDP_DEST_VRAM_READ=$01
 VDP_DEST_CRAM_WRITE=$02
