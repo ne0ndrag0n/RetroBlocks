@@ -36,40 +36,62 @@ RenderBoard:
 	; And of course, use the selected worldgen.
 
 	move.l	#IsometricRendertable, a0											; Load pointer to rendertable
-	move.l	#( (IsometricRendertable_End - IsometricRendertable) / 4 ), d1		; Load number of iterations to d1
+	move.w	#( (IsometricRendertable_End - IsometricRendertable) / 4 ), d1		; Load number of iterations to d1
 
+	move.w	#0, -(sp)	; 6(sp) Tile index of target tile
+	move.w	#0, -(sp)	; 4(sp) Palette of target tile
 	move.w	#0, -(sp)	; 2(sp) Word containing beginning xx yy coordinate of tile
 	move.w	#0, -(sp)	; (sp)  Word containing current iteration
 
-RenderBoard_Loop:
+RenderBoard_ExecuteCommand:
 	move.l	(a0), d0	; Load an entire rendertable command
 
-	move.b	d0, (sp)	; Number of iterations
+	move.b	d0, (sp)	; Number of times we need to "stamp" a 4x4 region, going diagonally x+2 tiles, y+1 tile
 
 	lsr.l	#8, d0
 	move.w  d0, 2(sp)	; Origin dimension
 
-RenderBoard_DiagonalLoop:
-	; The call to the worldgen method should account for the diffs
-	move.w	6(fp), -(sp)
-	move.w	4(fp), -(sp)	; Push coordinates for worldgen
-	jsr 8(sp)
-	PopStack 4
+	; Get the tile and palette located at the target nametable index
+	move.w	2(sp), d1
+	VdpGetNametableEntry d1, #VDP_GAMEPLAY_PLANE_B
 
-	tst.b	d0				; Nothing to do for air block
-	beq.s	RenderBoard_DiagonalLoop_Finally
+	move.w	d0, d1
+	andi.w	#$07FF, d1		; Copy to d1 and take only the tile ID
+	move.w	d1, 6(sp)		; Store the tile ID
+
+	move.w	d0, d1
+	andi.w	#$6000, d1		; Copy to d1 and take only the palette ID
+	lsr.w	#7, d1
+	lsr.w	#6, d1			; Shift palette over
+	mulu.w	#$20, d1		; Each palette is 32 bytes, multiply by 32 bytes to get CRAM index
+	move.w	d1,	4(sp)		; Store the palette ID
 
 	; Allocate space for an 8x8 copy of the target tile and its accompanying palette
 	move.l	sp, d0
 	addi.l	#32 + 15, d0
 	move.l	d0, sp			; (sp) - palette
 							; 15(sp) - tile
+							; Local variables begin again at 47
 
-	; Get copy of 8x8 tile out of VRAM
-	; TODO
+	; Copy palette to (sp)
+	move.w	47+4(sp), d0
+	move.l	sp, a1
+	VdpCopyPalette	d0, a1
 
-RenderBoard_DiagonalLoop_Finally:
+	; Then copy target tile to 15(sp)
+	move.w	47+6(sp), d0
+	move.l	sp, d1
+	addi.l	#15, d1
+	move.l	d1, a1
+	VdpCopyVramTile d0, a1
 
+	; The call to the worldgen method should account for the diffs
+	move.w	6(fp), -(sp)
+	move.w	4(fp), -(sp)	; Push coordinates for worldgen
+	jsr 8(fp)
+	PopStack 4
+
+	; TODO: With the worldgen result, fetch the tile that correlates with the 4x4 tile we are currently in
 	; Big TODO!
 
 	RestoreFramePointer

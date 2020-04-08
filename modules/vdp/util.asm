@@ -9,6 +9,14 @@ H_STATIC_VDP_UTIL = 1
   PopStack 6
  endm
 
+ macro VdpGetControlWord
+  move.l \2, -(sp)
+  move.w \1, -(sp)
+  move.w #0, -(sp)
+  jsr GetVdpControlWord
+  PopStack 8
+ endm
+
  macro VdpWriteDmaSourceAddress
   move.l \1, -(sp)
   jsr WriteDmaSourceAddress
@@ -56,6 +64,19 @@ H_STATIC_VDP_UTIL = 1
     PopStack 8
   endm
 
+  macro VdpReadVramWord
+    move.w \1, -(sp)
+    jsr ReadVramWord
+    PopStack 2
+  endm
+
+  macro VdpWriteVramWord
+    move.w \2, -(sp)
+    move.w \1, -(sp)
+    jsr WriteVramWord
+    PopStack 4
+  endm
+
 VDP_DEST_VRAM_WRITE=$00
 VDP_DEST_VRAM_READ=$01
 VDP_DEST_CRAM_WRITE=$02
@@ -94,6 +115,7 @@ WriteVDPNametableLocation:
   move.l  d0, (VDP_CONTROL)             ; Write VDP control word containing VRAM address
   rts
 
+; ** Deprecated ** use GetVdpControlWord
 ; 00 00 pp pp - Destination VRAM address
 ; 00 ss - Status, in bits: 0000 0000 for vram write, 0000 0001 for vram read, 0000 0010 for cram write, 1000 0000 for DMA
 ; Returns: Computed nametable address
@@ -123,6 +145,26 @@ ComputeVdpDestinationAddress_CheckDMA:
   or.l    d1, d0
 
 ComputeVdpDestinationAddress_WriteAddress:
+  move.l  4(sp), d1
+  andi.w  #$3FFF, d1                    ; address & $3FFF
+  lsl.l   #$07, d1
+  lsl.l   #$07, d1
+  lsl.l   #$02, d1                      ; << 16
+  or.l    d1, d0                        ; VDP_VRAM_WRITE | ( ( address & $3FFF ) << 16 )
+
+  move.l  4(sp), d1
+  andi.w  #$C000, d1                    ; address & $C000
+  lsr.w   #$07, d1
+  lsr.w   #$07, d1                      ; >> 14
+  or.l    d1, d0                        ; ... | ( ( address & $C000 ) >> 14 )
+  rts
+
+; Get the control word for a given VRAM address and VDP operation
+; 00 00 pp pp - Destination VRAM address
+; ss ss ss ss - VRAM status longword
+GetVdpControlWord:
+  move.l  8(sp), d0                     ; base options
+
   move.l  4(sp), d1
   andi.w  #$3FFF, d1                    ; address & $3FFF
   lsl.l   #$07, d1

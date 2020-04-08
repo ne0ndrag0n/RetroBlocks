@@ -8,6 +8,13 @@ H_STATIC_VDP_PALETTE = 1
     PopStack 6
   endm
 
+  macro VdpCopyPalette
+    move.l  \2, -(sp)
+    move.w  \1, -(sp)
+    jsr CopyPalette
+    PopStack 6
+  endm
+
 ; 00 pp - Palette index (0-3) -> 00, 20, 40, 60
 ; aa aa aa aa - Source address of palette data
 LoadPaletteDma:
@@ -32,7 +39,7 @@ LoadPaletteDma:
 ; Copy a palette out of CRAM into 68k RAM.
 ; 00 pp - Palette index (00, 20, 40, 60)
 ; aa aa aa aa - Address of a 16-element word array
-CopyCramPalette:
+CopyPalette:
   ; TODO!
   rts
 

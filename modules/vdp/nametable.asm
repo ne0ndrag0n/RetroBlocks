@@ -19,6 +19,13 @@ H_STATIC_VDP_NAMETABLE = 1
     PopStack 12
   endm
 
+  macro VdpGetNametableEntry
+    move.w \2, -(sp)
+    move.w \1, -(sp)
+    jsr GetNametableEntry
+    PopStack 4
+  endm
+
 VDP_TILE_ATTR_PAL0 = $00
 VDP_TILE_ATTR_PAL1 = $20
 VDP_TILE_ATTR_PAL2 = $40
@@ -136,6 +143,38 @@ ErasePlane:
   move.w  #0, (VDP_DATA)                ; VRAM fill of $0800 "0000" words to the specified plane
 
   VdpSetRegister 15, 2                  ; Put it back - Most static VDP operations assume word increment
+  rts
+
+; Get a specific nametable entry for an x,y coordinate on the specified plane.
+; xx yy - Plane coordinates
+; pp pp - Plane address in VRAM
+; Returns: ww ww - Nametable word
+GetNametableEntry:
+  SetupFramePointer
+
+  move.w  #0, -(sp)   ; 2(sp) - y
+  move.w  #0, -(sp)   ; (sp) - x
+
+  move.b  4(fp), (sp)
+  move.b  5(fp), 2(sp)
+
+	; Formula: VDP_GAMEPLAY_PLANE_A/B + ( 128 * x ) + ( 2 * y )
+
+  move.w  (sp), d0
+  mulu.w  #128, d0
+  move.w  d0, (sp)    ; x = x * 128
+
+  move.w  2(sp), d0
+  mulu.w  #2, d0
+  move.w  d0, 2(sp)   ; y = y * 2
+
+  move.w  (sp), d0
+  add.w   2(sp), d0   ; ( 128 * x ) + ( 2 * y )
+  add.w   6(fp), d0   ; + nametable_address
+
+  VdpReadVramWord  d0
+
+  RestoreFramePointer
   rts
 
  endif
