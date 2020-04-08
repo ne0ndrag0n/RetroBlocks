@@ -38,12 +38,14 @@ RenderBoard:
 	move.l	#IsometricRendertable, a0											; Load pointer to rendertable
 	move.w	#( (IsometricRendertable_End - IsometricRendertable) / 4 ), d1		; Load number of iterations to d1
 
+	; Allocate necessary local variables
 	move.w	#0, -(sp)	; 6(sp) Tile index of target tile
 	move.w	#0, -(sp)	; 4(sp) Palette of target tile
 	move.w	#0, -(sp)	; 2(sp) Word containing beginning xx yy coordinate of tile
 	move.w	#0, -(sp)	; (sp)  Word containing current iteration
 
 RenderBoard_ExecuteCommand:
+	; Format the current rendertable command out into the local variables
 	move.l	(a0), d0	; Load an entire rendertable command
 
 	move.b	d0, (sp)	; Number of times we need to "stamp" a 4x4 region, going diagonally x+2 tiles, y+1 tile
@@ -95,6 +97,48 @@ RenderBoard_ExecuteCommand:
 	; Big TODO!
 
 	RestoreFramePointer
+	rts
+
+; Given a block ID and status, return the address to a 4x4 set of tiles.
+; ss bb - Status and block ID
+; Returns: aa aa aa aa - Address to first tile in a 4x4 set of tiles
+;                        Null pointer if this operation could not complete successfully
+GetRomTileAddress:
+	move.l	#IsoTiles, d0		; Get pointer to IsoTiles table...
+	move.b	5(sp), d1
+	andi.w	#$00FF, d1
+	mulu.w	#4, d1
+	add.l	d1, d0				; Add 4n to the base index where n is the block ID
+
+	; d0 now points to the 122 byte header
+	move.l	d0, a0
+	move.b	1(a0), d1
+	andi.w	#$00FF, d1 			; Save the number of different tile states stored at this ROM location
+
+	addi.l	#ISOTILES_HEADER_SIZE, d0
+	move.l	d0, a0				; Now that the header isn't needed anymore, skip to the tiledata
+
+	move.w	4(sp), d0
+	lsr.w	#8, d0
+	move.w	d0, 4(sp)			; Now local variable contains only the block status, as the ID is no longer needed
+
+GetRomTileAddress_FindTiledata:
+	move.w	(a0), d0
+	cmp.w	4(sp), d0			; Compare this status flag to the local status flag
+	beq.s	GetRomTileAddress_TileFound	; Iterate again if they don't match
+
+	add.l	#514, a0			; One 4x4 tile block runs a total of 514 bytes (8*4 (32) for one block, times 4*4 (16) tiles, plus the status flag)
+	dbra	d1, GetRomTileAddress_FindTiledata
+
+	; Tile wasn't found
+	move.l	#0, d0				; Return null pointer
+	bra.s	GetRomTileAddress_Finally
+
+GetRomTileAddress_TileFound:
+	add.l	#2, a0				; adda on the address register to skip past the status flag and get to the desired tiledata
+	move.l	a0, d0				; Recall that d0 holds the return address
+
+GetRomTileAddress_Finally:
 	rts
 
 ; Get the colour set for two tiles.
