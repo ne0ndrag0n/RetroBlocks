@@ -142,15 +142,100 @@ GetRomTileAddress_Finally:
 	rts
 
 ; Get the colour set for two tiles.
-; a1 a1 a1 a1 - Address of the first 8x8 tile
-; a2 a2 a2 a2 - Address of the second 8x8 tile
-; a3 a3 a3 a3 - Address of the first tile's palette
-; a4 a4 a4 a4 - Address of the second tile's palette
-; a5 a5 a5 a5 - Address of the result
+; FIXME: bge should use unsigned checks instead?
+; a1 a1 a1 a1 - Address of the destination 8x8 tile
+; a2 a2 a2 a2 - Address of the destination tile's palette
+; a3 a3 a3 a3 - Address of the ROM tile's palette
+; a4 a4 a4 a4 - Address of the result
 ; Returns:	00 bb - 1 if the tile contains 15 elements or under
 ;                   0 if the tile contains over 15 elements.
-;                   Result in a5 a5 a5 a5 is valid only for return value of 1.
+;                   Result in a4 a4 a4 a4 is valid only for return value of 1.
 GetTileColourSet:
+	move.l	a2, -(sp)
+	move.l	a3, -(sp)
+	move.l	a4, -(sp)
+	move.l	d2, -(sp)
+	move.l	d3, -(sp)
+
+	; The result palette must at LEAST contain the elements from the ROM palette (no extraneous colours are used in ROM)
+	; Copy those, then add any colours occuring in the destination tile.
+	move.l 12(sp), a0	; a0 = ROM tile palette
+	move.l 16(sp), a1	; a1 = Result palette
+
+	move.l	a0, a2
+	add.l	#32, a2		; The pointer 32 elements down from the ROM is a boundary condition
+
+	move.l	a1, a3
+	add.l	#32, a3     ; Same for result boundary condition
+GetTileColourSet_CopyColours:
+	cmp.l	a2, a0
+	bge.s	GetTileColourSet_CopyColours_End  ; If we ran through a full palette in the ROM, jump out as there is nothing more to do
+
+	tst.w	(a0)
+	beq.s	GetTileColourSet_CopyColours_End  ; If there's a zero colour, break out of the loop
+
+	move.w	(a0)+, (a1)+					  ; Add the word at a0 to a1 and increment both by a word
+	bra.s	GetTileColourSet_CopyColours
+
+GetTileColourSet_CopyColours_End:
+
+	; Now, explore the destination 8x8 tile. For each nibble, check it against its native palette and see if the item is already in the new palette.
+	; If it's not, add it to the result palette (if there is room). a1 shall either point to next available element or beyond the boundary.
+	move.l	4(sp), a0	; a0 = Destination tile
+
+	move.l	a0, a2
+	add.l	#32, a2		; The pointer 32 elements down is past the tile
+
+	move.b	#8, d1		; d1 = Number of longwords we need to process
+
+GetTileColourSet_ProcessTile:
+	move.b	#8, d2		; d2 = Number of times we repeat the nibble extraction
+	move.l	(a0), d0
+
+GetTileColourSet_ProcessTileLongword:
+	move.l	d0, d3
+	andi.l	#$0000000F, d3		; Move d0 into d3 and take the nibble only
+	lsr.l	#4, d0				; Rotate d0 for the next nibble
+								; d3 = colour index
+
+	; Get this colour out of the destination palette, and see if it is present in the generated colour set.
+	move.l	8(sp), a4			; Grab pointer to destination palette
+	lsl.w	#1, d3				; Array of words, so multiply index by 2
+	move.w	(a4, d3), d3		; Ooh, indexed addressing!
+								; d3 = colour word corresponding to this nibble
+
+	move.l	d3, -(sp)
+	VdpFindPaletteEntry	d3, 16+4(sp)								; Find this entry in the result array
+	move.l	(sp)+, d3
+
+	cmpi.b	#-1, d0
+	bne.s	GetTileColourSet_ProcessTileLongword_Next				; Add a new entry if it is not in the result array
+
+GetTileColourSet_ProcessTileLongword_AddNewEntry:
+	cmp.l	a3, a1
+	bge.s	GetTileColourSet_ColoursExceeded
+
+	move.w	d3, (a1)+			; Add the entry to the result colour table
+
+GetTileColourSet_ProcessTileLongword_Next:
+	dbra	d2, GetTileColourSet_ProcessTileLongword
+
+	add.l	#4, a0				; Increment the tile longword pointer
+	dbra	d1, GetTileColourSet_ProcessTile
+
+	; If we make it here, we have successfully merged the palettes of the ROM tile and the destination tile
+	move.w	#1, d0
+	bra.s	GetTileColourSet_Finally
+
+GetTileColourSet_ColoursExceeded:
+	move.w	#0, d0
+
+GetTileColourSet_Finally:
+	move.l	(sp)+, d3
+	move.l	(sp)+, d2
+	move.l	(sp)+, a4
+	move.l	(sp)+, a3
+	move.l	(sp)+, a2
 	rts
 
 ; Given a colour set, find a palette that it can fit within.

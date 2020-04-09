@@ -7,19 +7,35 @@ ISOTILES_HEADER_SIZE = IsoTiles_default_dirt_Tiledata - IsoTiles_default_dirt
 
 IsoTiles:
 	; This table should correspond with the constant IDs in block.asm
-	dc.l	0
+	dc.l	IsoTiles_default_air
 	dc.l	0
 	dc.l	0
 	dc.l	IsoTiles_default_dirt
 
-IsoTiles_default_dirt:
+IsoTiles_default_air:
 	; 122 byte header
+	dc.b BLOCK_AIR
+	dc.b 1
+	dc.b 'default:air         '		; 120 chars to skip
+	dc.b 'Air: perfect for breathing, burning fire, and desperately needing when deep underwater.             '
+
+	; Tiledata
+	dc.w $0000
+	rept 8
+	dc.l $00000000
+	endr
+
+	; Palettes
+	dc.w $0000
+
+IsoTiles_default_dirt:
 	dc.b BLOCK_DIRT					; Block ID (number)
 	dc.b 1							; Number of different tile states
 	dc.b 'default:dirt        '		; 120 chars to skip
 	dc.b 'Good, old fashioned dirt. Ideal for growing grass, filling holes, and burying the dead.             '
 
-IsoTiles_default_dirt_Tiledata:
+	; Tiledata
+IsoTiles_default_dirt_Tiledata
 	dc.w $0000						; Tiles for status flag
 	dc.l $00000000
 	dc.l $00000000
@@ -165,7 +181,7 @@ IsoTiles_default_dirt_Tiledata:
 	dc.l $00000000
 	dc.l $00000000
 
-IsoTiles_default_dirt_palette:
+	; Palettes
 	dc.w $0500		; Number of elements in this palette, and the state block it correlates with
 
 	dc.w $0071

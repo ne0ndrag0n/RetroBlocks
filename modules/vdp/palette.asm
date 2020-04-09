@@ -15,6 +15,13 @@ H_STATIC_VDP_PALETTE = 1
     PopStack 6
   endm
 
+  macro VdpFindPaletteEntry
+    move.l  \2, -(sp)
+    move.w  \1, -(sp)
+    jsr FindPaletteEntry
+    PopStack 6
+  endm
+
 ; 00 pp - Palette index (0-3) -> 00, 20, 40, 60
 ; aa aa aa aa - Source address of palette data
 LoadPaletteDma:
@@ -40,7 +47,40 @@ LoadPaletteDma:
 ; 00 pp - Palette index (00, 20, 40, 60)
 ; aa aa aa aa - Address of a 16-element word array
 CopyPalette:
-  ; TODO!
+  move.w  4(sp), d0
+  VdpGetControlWord d0, #VDP_CRAM_READ
+
+  move.l  d0, (VDP_CONTROL)
+
+  move.w  #16, d1     ; d1 = counter for how many words to read
+  move.l  6(sp), a0   ; a0 = destination array
+CopyPalette_Loop:
+  move.w  (VDP_DATA), (a0)+
+  dbra    d1, CopyPalette_Loop
+  rts
+
+; Given a palette and a colour word, find the index of the entry.
+; cc cc - Colour entry to find
+; aa aa aa aa - Address of a 16-colour array.
+; Returns: 00 ii - Index, or -1 if entry not found.
+FindPaletteEntry:
+  move.w  #16, d1     ; d1 = counter for array
+  move.l  6(sp), a0   ; a0 = haystack
+                      ; 4(sp) = needle
+FindPaletteEntry_Loop:
+  move.w  (a0)+, d0
+  cmp.w   4(sp), d0
+  beq.s   FindPaletteEntry_Found
+  dbra    d1, FindPaletteEntry_Loop
+
+FindPaletteEntry_NotFound:
+  move.w  #-1, d0
+  rts
+
+FindPaletteEntry_Found:
+  ; Return 16 - d1
+  move.w  #16, d0
+  sub.w   d1, d0
   rts
 
   endif
