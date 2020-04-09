@@ -1,0 +1,1 @@
+; Testsuite contains several -D options that will compile the ROM after init.asm with a new program
