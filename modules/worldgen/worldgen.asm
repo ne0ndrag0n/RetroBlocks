@@ -45,10 +45,12 @@ GetBlock:
 	; TODO check FindDiff here
 
 GetBlock_ReturnWorldgen:
+	move.l	8(sp), a0
+
 	; If we get here, there's no difference in this position from a natural world state
 	move.w	6(sp), -(sp)
 	move.w	4(sp), -(sp)
-	jsr		8(sp)
+	jsr		(a0)
 	PopStack 4
 	rts
 GetBlock_ReturnAir:
