@@ -63,7 +63,6 @@ RenderBoard_ExecuteCommand:
 
 	; Get the tile and palette located at the target nametable index
 	move.w	2(sp), d1
-	DebugPrintLabelHere
 	VdpGetNametableEntry d1, #VDP_GAMEPLAY_PLANE_A
 
 	move.w	d0, d1

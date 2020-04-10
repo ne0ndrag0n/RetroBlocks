@@ -158,22 +158,23 @@ GetNametableEntry:
   move.b  4(fp), 1(sp)
   move.b  5(fp), 3(sp)
 
-	; Formula: VDP_GAMEPLAY_PLANE_A/B + ( 128 * x ) + ( 2 * y )
-
-  move.w  (sp), d0
-  mulu.w  #128, d0
-  move.w  d0, (sp)    ; x = x * 128
+	; Formula: VDP_GAMEPLAY_PLANE_A/B + ( 128 * y ) + ( 2 * x )
 
   move.w  2(sp), d0
-  mulu.w  #2, d0
-  move.w  d0, 2(sp)   ; y = y * 2
+  mulu.w  #128, d0
+  move.w  d0, 2(sp)    ; y = y * 128
 
   move.w  (sp), d0
-  add.w   2(sp), d0   ; ( 128 * x ) + ( 2 * y )
+  mulu.w  #2, d0
+  move.w  d0, (sp)     ; x = x * 2
+
+  move.w  (sp), d0
+  add.w   2(sp), d0   ; ( 128 * y ) + ( 2 * x )
   add.w   6(fp), d0   ; + nametable_address
 
   VdpReadVramWord  d0
 
+  PopStack 4
   RestoreFramePointer
   rts
 
