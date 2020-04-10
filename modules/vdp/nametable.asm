@@ -155,8 +155,8 @@ GetNametableEntry:
   move.w  #0, -(sp)   ; 2(sp) - y
   move.w  #0, -(sp)   ; (sp) - x
 
-  move.b  4(fp), (sp)
-  move.b  5(fp), 2(sp)
+  move.b  4(fp), 1(sp)
+  move.b  5(fp), 3(sp)
 
 	; Formula: VDP_GAMEPLAY_PLANE_A/B + ( 128 * x ) + ( 2 * y )
 

@@ -22,6 +22,14 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 
 ; End of a colour set is denoted by encountering 00 00 colour, or 15 elements.
 
+	macro IsoblenderRenderBoard
+		move.l	\3, -(sp)
+		move.w	\2, -(sp)
+		move.w	\1, -(sp)
+		jsr RenderBoard
+		PopStack 8
+	endm
+
 ; Render the board to the VRAM nametables + patterns, given the world origin point.
 ; The world will be rendered in a rectangular cutout beginning at the top right.
 ; xx yy	- Coordinates
@@ -55,7 +63,8 @@ RenderBoard_ExecuteCommand:
 
 	; Get the tile and palette located at the target nametable index
 	move.w	2(sp), d1
-	VdpGetNametableEntry d1, #VDP_GAMEPLAY_PLANE_B
+	DebugPrintLabelHere
+	VdpGetNametableEntry d1, #VDP_GAMEPLAY_PLANE_A
 
 	move.w	d0, d1
 	andi.w	#$07FF, d1		; Copy to d1 and take only the tile ID
@@ -69,11 +78,8 @@ RenderBoard_ExecuteCommand:
 	move.w	d1,	4(sp)		; Store the palette ID
 
 	; Allocate space for an 8x8 copy of the target tile and its accompanying palette
-	move.l	sp, d0
-	addi.l	#32 + 15, d0
-	move.l	d0, sp			; (sp) - palette
+	Allocate #47, d0		; (sp) - palette
 							; 15(sp) - tile
-							; Local variables begin again at 47
 
 	; Copy palette to (sp)
 	move.w	47+4(sp), d0
@@ -88,14 +94,12 @@ RenderBoard_ExecuteCommand:
 	VdpCopyVramTile d0, a1
 
 	; The call to the worldgen method should account for the diffs
-	move.w	6(fp), -(sp)
-	move.w	4(fp), -(sp)	; Push coordinates for worldgen
-	jsr 8(fp)
-	PopStack 4
+	WorldgenGetBlock 4(fp), 6(fp), 8(fp)
 
 	; TODO: With the worldgen result, fetch the tile that correlates with the 4x4 tile we are currently in
 	; Big TODO!
 
+	PopStack 47 + 8	; Pop palette, tile, and local variables
 	RestoreFramePointer
 	rts
 
@@ -142,7 +146,6 @@ GetRomTileAddress_Finally:
 	rts
 
 ; Get the colour set for two tiles.
-; FIXME: bge should use unsigned checks instead?
 ; a1 a1 a1 a1 - Address of the destination 8x8 tile
 ; a2 a2 a2 a2 - Address of the destination tile's palette
 ; a3 a3 a3 a3 - Address of the ROM tile's palette
@@ -169,7 +172,7 @@ GetTileColourSet:
 	add.l	#32, a3     ; Same for result boundary condition
 GetTileColourSet_CopyColours:
 	cmp.l	a2, a0
-	bge.s	GetTileColourSet_CopyColours_End  ; If we ran through a full palette in the ROM, jump out as there is nothing more to do
+	bhs.s	GetTileColourSet_CopyColours_End  ; If we ran through a full palette in the ROM, jump out as there is nothing more to do
 
 	tst.w	(a0)
 	beq.s	GetTileColourSet_CopyColours_End  ; If there's a zero colour, break out of the loop
@@ -213,7 +216,7 @@ GetTileColourSet_ProcessTileLongword:
 
 GetTileColourSet_ProcessTileLongword_AddNewEntry:
 	cmp.l	a3, a1
-	bge.s	GetTileColourSet_ColoursExceeded
+	bhs.s	GetTileColourSet_ColoursExceeded
 
 	move.w	d3, (a1)+			; Add the entry to the result colour table
 

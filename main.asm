@@ -5,7 +5,12 @@
   include 'bootstrap/headers.asm'
   include 'bootstrap/init.asm'
 
+  ifd TESTSUITE
+  jmp TESTSUITE_FUNCTION
+  include 'testsuite/main.asm'
+  else
   jmp RenderThread
+  endif
 
 BusError:
   rte
