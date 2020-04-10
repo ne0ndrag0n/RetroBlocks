@@ -52,7 +52,7 @@ CopyPalette:
 
   move.l  d0, (VDP_CONTROL)
 
-  move.w  #16, d1     ; d1 = counter for how many words to read
+  move.w  #15, d1     ; d1 = counter for how many words to read
   move.l  6(sp), a0   ; a0 = destination array
 CopyPalette_Loop:
   move.w  (VDP_DATA), (a0)+
@@ -64,7 +64,7 @@ CopyPalette_Loop:
 ; aa aa aa aa - Address of a 16-colour array.
 ; Returns: 00 ii - Index, or -1 if entry not found.
 FindPaletteEntry:
-  move.w  #16, d1     ; d1 = counter for array
+  move.w  #15, d1     ; d1 = counter for array
   move.l  6(sp), a0   ; a0 = haystack
                       ; 4(sp) = needle
 FindPaletteEntry_Loop:

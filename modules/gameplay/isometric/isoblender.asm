@@ -77,18 +77,18 @@ RenderBoard_ExecuteCommand:
 	move.w	d1,	4(sp)		; Store the palette ID
 
 	; Allocate space for an 8x8 copy of the target tile and its accompanying palette
-	Allocate #47, d0		; (sp) - palette
-							; 15(sp) - tile
+	Allocate #64, d0		; (sp) - palette
+							; 32(sp) - tile
 
 	; Copy palette to (sp)
-	move.w	47+4(sp), d0
+	move.w	64+4(sp), d0
 	move.l	sp, a1
 	VdpCopyPalette	d0, a1
 
-	; Then copy target tile to 15(sp)
-	move.w	47+6(sp), d0
+	; Then copy target tile to 16(sp)
+	move.w	64+6(sp), d0
 	move.l	sp, d1
-	addi.l	#15, d1
+	addi.l	#32, d1
 	move.l	d1, a1
 	VdpCopyVramTile d0, a1
 
@@ -98,7 +98,7 @@ RenderBoard_ExecuteCommand:
 	; TODO: With the worldgen result, fetch the tile that correlates with the 4x4 tile we are currently in
 	; Big TODO!
 
-	PopStack 47 + 8	; Pop palette, tile, and local variables
+	PopStack 64 + 8	; Pop palette, tile, and local variables
 	RestoreFramePointer
 	rts
 

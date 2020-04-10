@@ -61,18 +61,13 @@ CopyVramTile:
   move.w  4(sp), d0
   mulu.w  #32, d0           ; 32 bytes per tile
 
-  VdpComputeDestinationAddress d0, #0001    ; Get VDP-formatted control word for VRAM read at 4(sp)
+  VdpGetControlWord d0, #VDP_VRAM_READ
   move.l  d0, VDP_CONTROL
 
-  move.b  #16, d1          ; Gonna be reading 16 words (32 bytes) out of VRAM
+  move.w  #15, d1          ; Gonna be reading 16 words (32 bytes) out of VRAM
   move.l  6(sp), a0        ; Destination address goes in a0
 CopyVramTile_Loop:
-  move.w  VDP_DATA, (a0)
-
-  move.l  a0, d0
-  addi.l  #2, d0
-  move.l  d0, a0           ; Increment a0 by 2 bytes
-
+  move.w  VDP_DATA, (a0)+  ; Write to a0 and increment it by a word
   dbra    d1, CopyVramTile_Loop
   rts
 
