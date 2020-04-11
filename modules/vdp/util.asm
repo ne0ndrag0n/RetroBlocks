@@ -23,6 +23,13 @@ H_STATIC_VDP_UTIL = 1
   PopStack 4
  endm
 
+ macro VdpWriteDmaLength
+  move.w \1, d0
+  VdpSetRegisterRuntime 19, d0  ; Set low byte of length
+  lsr.w  #8, d0
+  VdpSetRegisterRuntime 20, d0  ; Set high byte of length
+ endm
+
   macro VdpDefineRegisterConstant
     dc.w ( ( $80 + \1 ) << 8 ) | \2
   endm
@@ -30,8 +37,7 @@ H_STATIC_VDP_UTIL = 1
   macro VdpSetRegisterRuntime
     move.w  #$0080, d1
     addi.w  #\1, d1
-    lsl.w   #7, d1
-    lsl.w   #1, d1
+    lsl.w   #8, d1
     or.b    \2, d1
     move.w  d1, (VDP_CONTROL)
   endm

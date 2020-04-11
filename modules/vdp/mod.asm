@@ -2,6 +2,7 @@
 H_STATIC_VDP_MOD = 1
 
  include 'modules/vdp/constants.asm'
+ include 'modules/vdp/dmaqueue.asm'
  include 'modules/vdp/text.asm'
  include 'modules/vdp/nametable.asm'
  include 'modules/vdp/util.asm'
