@@ -51,6 +51,7 @@ DmaQueueEnqueue_Found:
 DmaQueueEnqueue_End:
 	rts
 
+; Send items in the DMA queue.
 DmaQueueExecute:
 	move.l	#VDP_DMAQUEUE_ENTRIES, a0
 
@@ -69,7 +70,10 @@ DmaQueueExecute_ViewNext:
 
 DmaQueueExecute_SendEntry:
 	VdpWriteDmaLength (a0)
+	move.w	#0, (a0)				; Mark as tombstone available for reuse
+
 	add.l	#2, a0					; Bump up to source addr
+
 	VdpWriteDmaSourceAddress (a0)
 	add.l	#4, a0					; Bump up to destination vdp word
 
