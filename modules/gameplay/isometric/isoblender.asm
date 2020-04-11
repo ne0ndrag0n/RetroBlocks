@@ -4,8 +4,7 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 ; Instructions for overlaying tiles:
 ; * Take the union of the two colour sets across the two tiles due to be merged.
 ;	* If the number of colours is greater than 15, drop the tile.
-;   * If the tile's colour set fits cleanly into its existing palette, keep it.
-;   * If the tile's colour set fits cleanly into another palette, select that palette.
+;	* Find a palette that can comfortably fit the result palette.
 ;   * Otherwise, find the nearest fit with enough free space for the new AND existing entries together.
 ;		* If the missing entries fit into the tile's current palette, add them.
 ;		* If they don't, add all of the new tile's colour set to the next available palette. (inefficent)
@@ -20,7 +19,6 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 ; * Make the required palette substitutions on both the top tile and the bottom tile.
 ; * Overlay the top tile over the bottom tile, leaving out "0" nibbles in the top tile.
 
-; End of a colour set is denoted by encountering 00 00 colour, or 15 elements.
 
 	macro IsoblenderRenderBoard
 		move.l	\3, -(sp)
@@ -47,9 +45,11 @@ RenderBoard:
 	move.w	#( (IsometricRendertable_End - IsometricRendertable) / 4 ), d1		; Load number of iterations to d1
 
 	; Allocate necessary local variables
+	move.l	#0, -(sp)	; 12(sp) ROM address of tileset palette
+	move.l	#0, -(sp)	; 8(sp) ROM address of 4x4 tileset
 	move.w	#0, -(sp)	; 6(sp) Tile index of target tile
-	move.w	#0, -(sp)	; 4(sp) Palette of target tile
-	move.w	#0, -(sp)	; 2(sp) Word containing beginning xx yy coordinate of tile
+	move.w	#0, -(sp)	; 4(sp) Palette index of target tile
+	move.w	#0, -(sp)	; 2(sp) Current xx yy position of stamper on plane
 	move.w	#0, -(sp)	; (sp)  Word containing current iteration
 
 RenderBoard_ExecuteCommand:
@@ -59,7 +59,7 @@ RenderBoard_ExecuteCommand:
 	move.b	d0, (sp)	; Number of times we need to "stamp" a 4x4 region, going diagonally x+2 tiles, y+1 tile
 
 	lsr.l	#8, d0
-	move.w  d0, 2(sp)	; Origin dimension
+	move.w  d0, 2(sp)	; Stamper position
 
 	; Get the tile and palette located at the target nametable index
 	move.w	2(sp), d1
@@ -98,7 +98,7 @@ RenderBoard_ExecuteCommand:
 	; TODO: With the worldgen result, fetch the tile that correlates with the 4x4 tile we are currently in
 	; Big TODO!
 
-	PopStack 64 + 8	; Pop palette, tile, and local variables
+	PopStack 64 + 16	; Pop palette, tile, and local variables
 	RestoreFramePointer
 	rts
 
@@ -153,91 +153,6 @@ GetRomTileAddress_Finally:
 ;                   0 if the tile contains over 15 elements.
 ;                   Result in a4 a4 a4 a4 is valid only for return value of 1.
 GetTileColourSet:
-	move.l	a2, -(sp)
-	move.l	a3, -(sp)
-	move.l	a4, -(sp)
-	move.l	d2, -(sp)
-	move.l	d3, -(sp)
-
-	; The result palette must at LEAST contain the elements from the ROM palette (no extraneous colours are used in ROM)
-	; Copy those, then add any colours occuring in the destination tile.
-	move.l 12(sp), a0	; a0 = ROM tile palette
-	move.l 16(sp), a1	; a1 = Result palette
-
-	move.l	a0, a2
-	add.l	#32, a2		; The pointer 32 elements down from the ROM is a boundary condition
-
-	move.l	a1, a3
-	add.l	#32, a3     ; Same for result boundary condition
-GetTileColourSet_CopyColours:
-	cmp.l	a2, a0
-	bhs.s	GetTileColourSet_CopyColours_End  ; If we ran through a full palette in the ROM, jump out as there is nothing more to do
-
-	tst.w	(a0)
-	beq.s	GetTileColourSet_CopyColours_End  ; If there's a zero colour, break out of the loop
-
-	move.w	(a0)+, (a1)+					  ; Add the word at a0 to a1 and increment both by a word
-	bra.s	GetTileColourSet_CopyColours
-
-GetTileColourSet_CopyColours_End:
-
-	; Now, explore the destination 8x8 tile. For each nibble, check it against its native palette and see if the item is already in the new palette.
-	; If it's not, add it to the result palette (if there is room). a1 shall either point to next available element or beyond the boundary.
-	move.l	4(sp), a0	; a0 = Destination tile
-
-	move.l	a0, a2
-	add.l	#32, a2		; The pointer 32 elements down is past the tile
-
-	move.b	#8, d1		; d1 = Number of longwords we need to process
-
-GetTileColourSet_ProcessTile:
-	move.b	#8, d2		; d2 = Number of times we repeat the nibble extraction
-	move.l	(a0), d0
-
-GetTileColourSet_ProcessTileLongword:
-	move.l	d0, d3
-	andi.l	#$0000000F, d3		; Move d0 into d3 and take the nibble only
-	lsr.l	#4, d0				; Rotate d0 for the next nibble
-								; d3 = colour index
-
-	; Get this colour out of the destination palette, and see if it is present in the generated colour set.
-	move.l	8(sp), a4			; Grab pointer to destination palette
-	lsl.w	#1, d3				; Array of words, so multiply index by 2
-	move.w	(a4, d3), d3		; Ooh, indexed addressing!
-								; d3 = colour word corresponding to this nibble
-
-	move.l	d3, -(sp)
-	VdpFindPaletteEntry	d3, 16+4(sp)								; Find this entry in the result array
-	move.l	(sp)+, d3
-
-	cmpi.b	#-1, d0
-	bne.s	GetTileColourSet_ProcessTileLongword_Next				; Add a new entry if it is not in the result array
-
-GetTileColourSet_ProcessTileLongword_AddNewEntry:
-	cmp.l	a3, a1
-	bhs.s	GetTileColourSet_ColoursExceeded
-
-	move.w	d3, (a1)+			; Add the entry to the result colour table
-
-GetTileColourSet_ProcessTileLongword_Next:
-	dbra	d2, GetTileColourSet_ProcessTileLongword
-
-	add.l	#4, a0				; Increment the tile longword pointer
-	dbra	d1, GetTileColourSet_ProcessTile
-
-	; If we make it here, we have successfully merged the palettes of the ROM tile and the destination tile
-	move.w	#1, d0
-	bra.s	GetTileColourSet_Finally
-
-GetTileColourSet_ColoursExceeded:
-	move.w	#0, d0
-
-GetTileColourSet_Finally:
-	move.l	(sp)+, d3
-	move.l	(sp)+, d2
-	move.l	(sp)+, a4
-	move.l	(sp)+, a3
-	move.l	(sp)+, a2
 	rts
 
 ; Given a colour set, find a palette that it can fit within.

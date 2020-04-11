@@ -27,6 +27,9 @@ IsoTiles_default_air:
 
 	; Palettes
 	dc.w $0000
+	rept 16
+	dc.w $0000
+	endr
 
 IsoTiles_default_dirt:
 	dc.b BLOCK_DIRT					; Block ID (number)
@@ -182,12 +185,16 @@ IsoTiles_default_dirt_Tiledata
 	dc.l $00000000
 
 	; Palettes
-	dc.w $0500		; Number of elements in this palette, and the state block it correlates with
+	dc.w $0000		; The state + block it correlates with
 
+	dc.w $0000
 	dc.w $0071
 	dc.w $0051
 	dc.w $0246
 	dc.w $0041
 	dc.w $0235
+	rept 10
+	dc.w $0000
+	endr
 
 	endif
