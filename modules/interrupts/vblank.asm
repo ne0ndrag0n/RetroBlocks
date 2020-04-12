@@ -12,6 +12,7 @@ VBlank_Begin:
 VBlank_Update:
   jsr UpdateTicks
   jsr JoypadVBlank
+  jsr DmaQueueExecute
 
   jmp ThreaderLoadContext
 
