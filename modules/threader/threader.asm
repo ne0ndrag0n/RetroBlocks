@@ -44,11 +44,7 @@ ThreaderUpdate:
 	tst.b	(THREADER_REMAINING_TICKS)		; If there are no remaining ticks
 	beq.s	ThreaderUpdate_SwapContext		; Switch context
 
-	move.l	d0, -(sp)						; We haven't yet contextsaved the registers in vblank
-	move.b  (THREADER_REMAINING_TICKS), d0	; Take a tick off and return if there are still remaining ticks
-	subi.b  #1, d0
-	move.b  d0, (THREADER_REMAINING_TICKS)
-	move.l	(sp)+, d0						; Restore d0 to its original value
+	sub.b	#1, THREADER_REMAINING_TICKS	; Take a tick off and return if there are still remaining ticks
 	jmp		VBlank_Update
 
 ThreaderUpdate_SwapContext:
@@ -58,15 +54,37 @@ ThreaderUpdate_SwapContext:
 ThreaderUpdate_SwitchToMain:
 	move.b	#THREAD_BACK, (THREADER_NEXT_CONTEXT)								; The thread that follows main is the back thread
 	move.b	(THREADER_MAIN_PRIORITY_SETTING), (THREADER_REMAINING_TICKS)		; Set main number of ticks as remaining ticks
-	SaveContext	THREADER_BACK_CONTEXT
-	LoadContext THREADER_MAIN_CONTEXT
-	jmp VBlank_Finally
+	jmp VBlank_Update
 
 ThreaderUpdate_SwitchToBackground:
 	move.b	#THREAD_MAIN, (THREADER_NEXT_CONTEXT)								; The thread that follows back is the main thread
 	move.b	(THREADER_BACK_PRIORITY_SETTING), (THREADER_REMAINING_TICKS)		; Set back number of ticks as remaining ticks
-	SaveContext	THREADER_MAIN_CONTEXT
-	LoadContext THREADER_BACK_CONTEXT
-	jmp VBlank_Finally
+	jmp VBlank_Update
+
+; Save a context when VBlank begins. This should also handle saving context for all of VBlank.
+ThreaderSaveContext:
+	tst.b	THREADER_NEXT_CONTEXT		; If next context is 0, we're on the background thread, and vice versa (it's reversed here)
+	beq.s	ThreaderSaveContext_Back
+
+ThreaderSaveContext_Main:
+	SaveContext THREADER_MAIN_CONTEXT
+	jmp VBlank_Begin
+
+ThreaderSaveContext_Back:
+	SaveContext THREADER_BACK_CONTEXT
+	jmp VBlank_Begin
+
+; Load a context when VBlank ends. ThreaderUpdate will handle swaps as they are needed.
+ThreaderLoadContext:
+	tst.b	THREADER_NEXT_CONTEXT		; If next context is 0, we're on the background thread, and vice versa (it's reversed here)
+	beq.s	ThreaderLoadContext_Back
+
+ThreaderLoadContext_Main:
+	LoadContext	THREADER_MAIN_CONTEXT
+	jmp VBlank_End
+
+ThreaderLoadContext_Back:
+	LoadContext	THREADER_BACK_CONTEXT
+	jmp VBlank_End
 
 	endif
