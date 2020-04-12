@@ -72,12 +72,10 @@ DmaQueueExecute_SendEntry:
 	VdpWriteDmaLength (a0)
 	move.w	#0, (a0)				; Mark as tombstone available for reuse
 
-	add.l	#2, a0					; Bump up to source addr
+	VdpWriteDmaSourceAddress 2(a0)				; Write source address 2 blocks down
 
-	VdpWriteDmaSourceAddress (a0)
-	add.l	#4, a0					; Bump up to destination vdp word
-
-	move.l	(a0), VDP_CONTROL		; Send VDP control word, executing the DMA
+	move.l	6(a0), VDP_CONTROL					; Send VDP control word, executing the DMA
+	add.l	#VDP_DMAQUEUE_ENTRY_SIZE, a0		; Bump a0 to the next word
 	bra.s	DmaQueueExecute_Loop
 
 DmaQueueExecute_End:

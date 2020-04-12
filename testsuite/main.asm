@@ -3,7 +3,7 @@
 	include 'modules/helpers/debug.asm'
 	include 'modules/worldgen/mod.asm'
 	include 'modules/gameplay/mod.asm'
-TESTSUITE_FUNCTION = TestIsoblender
+TESTSUITE_FUNCTION = TestDmaQueue
 
 TestIsoblender:
 	; Set up isoblender test
@@ -22,3 +22,15 @@ TestIsoblender_Begin:
 
 TestIsoblender_Loop:
 	bra.s TestIsoblender_Loop
+
+TestDmaQueue:
+	VdpGetControlWord #$0000, #( VDP_VRAM_WRITE | VDP_DMA_ADDRESS )
+	VdpDmaQueueEnqueue #32, #Font, d0	; load two characters from font into top of VRAM
+
+	VdpGetControlWord #$0040, #( VDP_VRAM_WRITE | VDP_DMA_ADDRESS )
+	DebugPrintLabelHere
+	VdpDmaQueueEnqueue #32, #Font + 64, d0	; load two characters from font into top of VRAM
+	jsr DmaQueueExecute
+
+TestDmaQueue_Loop:
+	bra.s TestDmaQueue_Loop
