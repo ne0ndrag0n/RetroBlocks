@@ -26,6 +26,18 @@ H_STATIC_VDP_NAMETABLE = 1
     PopStack 4
   endm
 
+  macro VdpGetTileId
+    move.w  \1, d0
+    andi.w  #$07FF, d0
+  endm
+
+  macro VdpGetPaletteId
+    move.w  \1, d0
+    andi.w  #$6000, d0
+    lsr.w   #8, d0
+    lsr.w   #5, d0
+  endm
+
 VDP_TILE_ATTR_PAL0 = $00
 VDP_TILE_ATTR_PAL1 = $20
 VDP_TILE_ATTR_PAL2 = $40
