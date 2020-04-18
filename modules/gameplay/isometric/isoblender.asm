@@ -48,6 +48,21 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 		PopStack 8
 	endm
 
+	macro IsoblenderGetTileNibble
+		move.l	\2, -(sp)
+		move.w	\1, -(sp)
+		bsr GetTileNibble
+		PopStack 6
+	endm
+
+	macro IsoblenderSetTileNibble
+		move.l	\3, -(sp)
+		move.w	\2, -(sp)
+		move.w	\1, -(sp)
+		bsr SetTileNibble
+		PopStack 8
+	endm
+
 ; Render the board to the VRAM nametables + patterns, given the world origin point.
 ; The world will be rendered in a rectangular cutout beginning at the top right.
 ; xx yy	- Coordinates
@@ -228,6 +243,54 @@ PaletteContainsSet_ReturnFalse:
 PaletteContainsSet_Finally:
 	PopStack 8
 	RestoreFramePointer
+	rts
+
+; Given an index and a tile row, return one of 8 4-bit nibbles in the longword
+; 00 ii - Index of nibble (0-7)
+; ll ll ll ll - Tile row
+; Returns: 00 nn - Nibble in the longword
+GetTileNibble:
+	move.l	6(sp), d0
+
+GetTileNibble_Loop:
+	tst.w	4(sp)
+	beq.s	GetTileNibble_Filter
+
+	lsr.l	#4, d0 			; Shift nibble over
+
+	sub.w	#1, 4(sp)
+	bra.s	GetTileNibble_Loop
+
+GetTileNibble_Filter:
+	andi.l	#$0000000F, d0	; All we want is the last nibble
+	rts
+
+; Given an index and tile row, and replacement value, swap the nibble for the provided nibble.
+; 00 ii - Index of nibble (0-7)
+; 00 rr - Replacement value for this nibble
+; ll ll ll ll - Longword
+; Returns: ll ll ll ll - Longword with nibble replaced
+SetTileNibble:
+	move.l	#$0000000F, d0	; NOT mask
+	move.l	#0, d1
+	move.w	6(sp), d1		; Value we will be overlaying onto longword
+
+SetTileNibble_Loop:
+	tst.w	4(sp)
+	beq.s	SetTileNibble_Set
+
+	lsl.l	#4, d0
+	lsl.l	#4, d1			; Move both down the longword
+
+	sub.w	#1, 4(sp)
+	bra.s	SetTileNibble_Loop
+
+SetTileNibble_Set:
+	not.l	d0				; Invert to create a mask
+	and.l 	d0, 8(sp)		; Use mask to remove nibble we are replacing
+	or.l	d1, 8(sp)		; Overlay the nibble at the desired location
+
+	move.l	8(sp), d0		; Return value
 	rts
 
 	endif
