@@ -21,12 +21,13 @@ IsoTiles_default_air:
 
 	; Tiledata
 	dc.w $0000
+	dc.l IsoTiles_default_air_Palette
 	rept 8
 	dc.l $00000000
 	endr
 
 	; Palettes
-	dc.w $0000
+IsoTiles_default_air_Palette:
 	rept 16
 	dc.w $0000
 	endr
@@ -38,8 +39,9 @@ IsoTiles_default_dirt:
 	dc.b 'Good, old fashioned dirt. Ideal for growing grass, filling holes, and burying the dead.             '
 
 	; Tiledata
-IsoTiles_default_dirt_Tiledata
+IsoTiles_default_dirt_Tiledata:
 	dc.w $0000						; Tiles for status flag
+	dc.l IsoTiles_default_dirt_Palette
 	dc.l $00000000
 	dc.l $00000000
 	dc.l $00000000
@@ -185,8 +187,7 @@ IsoTiles_default_dirt_Tiledata
 	dc.l $00000000
 
 	; Palettes
-	dc.w $0000		; The state + block it correlates with
-
+IsoTiles_default_dirt_Palette:
 	dc.w $0000
 	dc.w $0071
 	dc.w $0051

@@ -22,6 +22,13 @@ H_STATIC_VDP_PALETTE = 1
     PopStack 6
   endm
 
+  macro VdpCopyRomPalette
+    move.l \2, -(sp)
+    move.l \1, -(sp)
+    jsr CopyRomPalette
+    PopStack 8
+  endm
+
 ; 00 pp - Palette index (0-3) -> 00, 20, 40, 60
 ; aa aa aa aa - Source address of palette data
 LoadPaletteDma:
@@ -81,6 +88,19 @@ FindPaletteEntry_Found:
   ; Return 16 - d1
   move.w  #16, d0
   sub.w   d1, d0
+  rts
+
+; Copy a palette in ROM to a location in RAM.
+; ss ss ss ss - Source palette
+; dd dd dd dd - Destination array (32 bytes)
+CopyRomPalette:
+  move.w  #8, d0
+
+  move.l  4(sp), a0   ; Source pointer
+  move.l  8(sp), a1   ; Destination pointer
+CopyRomPalette_Loop:
+  move.l  (a0)+, (a1)+
+  dbeq  d0, CopyRomPalette_Loop
   rts
 
   endif
