@@ -63,6 +63,14 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 		PopStack 8
 	endm
 
+	macro IsoblenderStampBlock
+		move.l	\3, -(sp)
+		move.w	\2, -(sp)
+		move.w	\1, -(sp)
+		bsr	StampBlock
+		PopStack 8
+	endm
+
 ; Render the board to the VRAM nametables + patterns, given the world origin point.
 ; The world will be rendered in a rectangular cutout beginning at the top right.
 ; xx yy	- Coordinates
@@ -77,19 +85,19 @@ RenderBoard:
 	; And of course, use the selected worldgen.
 
 	; Allocate necessary local variables
-	Allocate #32																; 142(sp) Copy of destination VRAM tile
-	Allocate #96																; 46(sp) Full dump of 3 CRAM palettes - Generate per tile in stamper and DMA when finished
-	Allocate #32																; 14(sp) Palette generated from combining ROM tile with target tile
-	move.l	#0, -(sp)															; 10(sp) Reserved for temps
+	move.w	#0, -(sp)															; 106(sp) Copy of coordinates used for iteration
+	Allocate #96																; 10(sp) Full dump of 3 CRAM palettes - Generate per tile in stamper and DMA when finished
 	move.l	#IsometricRendertable, -(sp)										; 6(sp) Pointer to current stamper instruction in ROM
 	move.w	#( (IsometricRendertable_End - IsometricRendertable) / 4 ), -(sp)	; 4(sp) Number of stamper iterations remaining
 	move.w	#0, -(sp)															; 2(sp) Current xx yy position of stamper on plane
 	move.w	#0, -(sp)															; (sp)  Word containing current iteration of stamper
 
 	; Dump shared palettes - they will be modified as we go and thrown over the wall to the DMA queue.
-	VdpCopyPalette VDP_PAL_1, 44(sp)
-	VdpCopyPalette VDP_PAL_2, 76(sp)
-	VdpCopyPalette VDP_PAL_3, 108(sp)
+	VdpCopyPalette VDP_PAL_1, 10(sp)
+	VdpCopyPalette VDP_PAL_2, 42(sp)
+	VdpCopyPalette VDP_PAL_3, 74(sp)
+
+	move.w	4(fp), 106(sp)			; Copy xx yy of world origin to start off the stamper
 
 RenderBoard_StamperIteration:
 	tst.w	4(sp)		; If there's no more stamper instructions, break loop
@@ -109,40 +117,48 @@ RenderBoard_StamperIteration:
 
 RenderBoard_ExecuteStamper:
 	tst.w	(sp)
-	beq.s	RenderBoard_StamperIteration	; Next stamper command if 0
-	subi.w	#1, (sp)						; Decrement remaining stamps on this origin
+	beq.s	RenderBoard_NextStamperIteration	; Next stamper command if 0
 
 	; Call worldgen and get the block ID we need, then get that block out of the isoblock table
 	WorldgenGetBlock 4(fp), 6(fp), 8(fp)
-	IsoblenderGetRomBlockAddress d0
-	move.l	d0, 10(sp)						; Save address to header of tile
 
-	addi.l	#2, d0
-	move.l	d0, a0
-	move.l	(a0), a0						; Skip to palette pointer and load the palette pointer
+	move.w	2(sp), d1			; Prepare first argument
 
-	move.l	sp, d0
-	addi.l	#14, d0
-	VdpCopyRomPalette a0, d0				; Dump ROM palette to local array
+	move.l	sp, a0
+	add.l	#10, a0				; Prepare third argument
 
-	; Now determine if ROM palette fits into the palette used by the tile
-	VdpGetPaletteId 10(sp)
-	lsl.w	#5, d0			; Get palette byte offset from palette ID
-	andi.l	#$000000FF, d0
-	add.l	sp, d0
-	addi.l	#46, d0			; sp + 46 + the palette offset
+	IsoblenderStampBlock d1, d0, a0
 
-	move.l	sp, d1
-	addi.l	#14, d1			; pointer to the ROM palette
-	IsoblenderPaletteContainsSet d1, d0
+	addi.b	#2, 2(sp)			; VDP plane position x+2
+	addi.b	#1, 3(sp)			; VDP plane position y+1
 
-	; If ROM's colour set fits cleanly into the existing palette, simply overlay it
-	; If it doesn't, we need to split the existing palette in hopes of fitting it in
+	subi.b	#1, 107(sp)			; Move -1 along the world in the y dimension
 
-	bra.s RenderBoard_ExecuteStamper
+	subi.w	#1, (sp)			; Decrement remaining stamps on this origin
+
+	bra.s	RenderBoard_ExecuteStamper
+
+RenderBoard_NextStamperIteration:
+	subi.b	#1, 4(fp)			; origin x-1
+	addi.b	#1, 5(fp)			; origin y+1
+	move.w	4(fp), 106(sp)		; Set up iteration counter for next iteration of stamper
+
+	bra.s	RenderBoard_StamperIteration
 
 RenderBoard_Finally:
-	PopStack 32 + 96 + 32 + 14
+	PopStack 96 + 12
+	RestoreFramePointer
+	rts
+
+; Stamp a 4x4 block (16 tiles total) beginning at the specified plane location.
+; xx yy - Location on gameplay state plane B
+; ss bb - State & block ID
+; aa aa aa aa - Address of 96-byte array with dumped CRAM palettes
+StampBlock:
+	SetupFramePointer
+
+	; TODO use IsoblenderGetRomBlockAddress on the second argument
+
 	RestoreFramePointer
 	rts
 
