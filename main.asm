@@ -24,6 +24,10 @@ IllegalInstr:
 TrapException:
   rte
 
+UserError:
+  move.w  #$DEAD, d0
+  bra.s UserError
+
 ExternalInterrupt:
   rte
 

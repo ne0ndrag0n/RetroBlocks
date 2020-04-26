@@ -1,10 +1,9 @@
 	ifnd H_GAMEPLAY_ISOMETRIC_ISOBLENDER
 H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 
-
 ; Distributing colours across the three usermode palettes is a bin packing problem which is np-hard
 ;1. Copy palette of tile from ROM
-;2. Determine if this palette fully fits into the target tile's palette.
+;2. Determine if this palette fully fits into the target tile's palette. Lookup each colour in hashtable.
 ;   If it does, go to step 3
 ;   If it does not, go to step 6
 ;3. In the tile from ROM, update nibbles to correspond with their colours in the target tile's palette.
@@ -14,18 +13,21 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 ;6. Attempt to insert new colours into the target tile's existing palette.
 ;    If they fit, go to step 3.
 ;    If they don't fit, go to step 7
-;7. Attempt to find another palette that fully fits this new tile's palette. This will require bringing in colours from the existing tile.
-;    If one is found, update the nametable entry to point to this palette, and go to step 3.
-;    If one is not found, go to step 8.
-;8. Attempt to insert new colours into palette that both shares the most existing colours with the new tile's palette,
-;and also has enough room for the new colours.
-;    If this can be done, update the nametable entry to point to this palette, and go to step 3.
-;    If this cannot be done, go to step 9.
-;9. Begin dropping colours from the tile in order to reduce the load it places on the palettes.
+;7. Begin dropping colours from the tile in order to reduce the load it places on the palettes.
 ;    Take the colour that occurs the least in this palette (e.g. a single blue pixel for water in the corner) and change
 ;    occurrences of it to transparency (0). Then, drop the colour from the colour set required for the new tile.
 ;
 ;    Repeat the process from step 2.
+;
+; * For index 0 nametable entries, find the nearest palette that can contain the new ROM subpalette.
+;   This is where the entry point is for tiles' palettes. Use hashtable to determine if subpalette fits into each palette.
+;   If no palettes can contain the entry, we drop the tile.
+
+ISOBLENDER_TILE_HASHTABLE = $FF0100
+ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE = 100
+
+ISOBLENDER_PAL_HASHTABLE = ISOBLENDER_TILE_HASHTABLE + (255*ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE)
+ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE = 30
 
 	macro IsoblenderRenderBoard
 		move.l	\3, -(sp)
@@ -79,13 +81,17 @@ H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 RenderBoard:
 	SetupFramePointer
 
+	; Set up VRAM tile hashtable (for stamper)
+	bsr.w InitHashtables
+
 	; Using the rendertable, iterate each isometric block position
 	; When iterating the third byte, move two 8x8 blocks over and one down each time.
 	; Call BlendTile to overlay the top tile onto the bottom one.
 	; And of course, use the selected worldgen.
 
 	; Allocate necessary local variables
-	move.w	#0, -(sp)															; 106(sp) Copy of coordinates used for iteration
+	move.w	#0, -(sp)															; 110(sp) Copy of coordinates used for iteration
+	move.l	#$000F0F0F, -(sp)													; 106(sp) Remaining free space in 3 CRAM palettes
 	Allocate #96																; 10(sp) Full dump of 3 CRAM palettes - Generate per tile in stamper and DMA when finished
 	move.l	#IsometricRendertable, -(sp)										; 6(sp) Pointer to current stamper instruction in ROM
 	move.w	#( (IsometricRendertable_End - IsometricRendertable) / 4 ), -(sp)	; 4(sp) Number of stamper iterations remaining
@@ -132,7 +138,7 @@ RenderBoard_ExecuteStamper:
 	addi.b	#2, 2(sp)			; VDP plane position x+2
 	addi.b	#1, 3(sp)			; VDP plane position y+1
 
-	subi.b	#1, 107(sp)			; Move -1 along the world in the y dimension
+	subi.b	#1, 111(sp)			; Move -1 along the world in the y dimension
 
 	subi.w	#1, (sp)			; Decrement remaining stamps on this origin
 
@@ -141,23 +147,46 @@ RenderBoard_ExecuteStamper:
 RenderBoard_NextStamperIteration:
 	subi.b	#1, 4(fp)			; origin x-1
 	addi.b	#1, 5(fp)			; origin y+1
-	move.w	4(fp), 106(sp)		; Set up iteration counter for next iteration of stamper
+	move.w	4(fp), 110(sp)		; Set up iteration counter for next iteration of stamper
 
 	bra.s	RenderBoard_StamperIteration
 
 RenderBoard_Finally:
-	PopStack 96 + 12
+	PopStack 96 + 16
 	RestoreFramePointer
 	rts
 
 ; Stamp a 4x4 block (16 tiles total) beginning at the specified plane location.
 ; xx yy - Location on gameplay state plane B
 ; ss bb - State & block ID
-; aa aa aa aa - Address of 96-byte array with dumped CRAM palettes
+; aa aa aa aa - Address of 96-byte array with dumped CRAM palettes + longword at end detailing free space remaining
 StampBlock:
 	SetupFramePointer
 
+	move.l	#0, -(sp)		; 36(sp) - Address of the block we are stamping
+	move.w	#0, -(sp)		; 34(sp) - Target nametable entry per iteration
+	move.w	#$0404, -(sp)	; 32(sp) - x, y tiles remaining
+	Allocate #32			; (sp) - Current block being worked on
+
+	IsoblenderGetRomBlockAddress 6(fp)
+	move.l	d0, 36(sp)					; Get and save the ROM block address
+
 	; TODO use IsoblenderGetRomBlockAddress on the second argument
+
+	PopStack 32 + 8
+	RestoreFramePointer
+	rts
+
+; Given a tile's palette and the total list of VRAM palettes, get a palette for the given ROM tile palette,
+; and adjust VRAM palettes as necessary.
+; pp pp - Plane nametable entry
+; rr rr rr rr - Palette associated with incoming ROM tile + header
+; aa aa aa aa - Address of 96-byte VRAM palette dump + longword at end detailing free space remaining
+; Returns: 00 ii - Palette offset (00, 20, or 40)
+GetBlockTilePalette:
+	SetupFramePointer
+
+	; TODO
 
 	RestoreFramePointer
 	rts
@@ -202,111 +231,30 @@ GetRomBlockAddress_TileFound:
 GetRomBlockAddress_Finally:
 	rts
 
+; Set up the VRAM tile hashtables.
+;	* There are 255 buckers accessible via Pearson hash.
+;	* Each bucket contains ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE entries, in bytes.
+;	* Half of ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE is the number of words storable in each bucket.
+;	* Buckets are full when an $FFFF entry can't be located in the bucket.
+;	* A usermode exception is thrown when a bucket is full.
+InitHashtables:
+	move.l	#ISOBLENDER_TILE_HASHTABLE, a0
+	move.w	#( ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE / 2 ) - 1, d0
+InitHashtables_Loop:
+	move.w	#$FFFF, (a0)+
+	dbeq	d0, InitHashtables_Loop
 
-; Determine if colour set [ cc cc cc cc ] fits into the palette located at [ pp pp pp pp ]
-; cc cc cc cc - Colour set (16 entries padded by 0000)
-; pp pp pp pp - Target palette
-; Returns: 00 bb - 1 if it does, 0 if it does not
-PaletteContainsSet:
-	SetupFramePointer
-
-	move.w	#0, -(sp)		; 6(sp) Current colour from palette to compare to colour from set
-	move.w	#15, -(sp)		; 4(sp) Current counter for the palette loop
-	move.w	#15, -(sp)		; 2(sp) Current counter for the set loop
-	move.w	#0, -(sp)		; (sp) Current colour from set that we are looking for in target palette
-
-	move.l	4(fp), a0		; a0 = Current colour in the colourset
-	move.w	2(sp), d0		; Set up the next loop
-
-PaletteContainsSet_ForEachColourSetEntry:
-	move.w	d0, 2(sp)		; Save new counter
-
-	move.w	(a0)+, (sp)		; Move next colour from set
-
-	; Now root through the palette at 8(fp) and find (sp)
-	move.l	8(fp), a1		; a1 = Current palette entry
-	move.w	4(sp), d0		; Set up inner loop
-PaletteContainsSet_ForEachColourSetEntry_ForEachPaletteEntry:
-	move.w	d0, 4(sp)		; Save new counter
-
-	move.w	(a1)+, 6(sp)	; Get colour to compare to
-
-	move.w	(sp), d0
-	move.w	6(sp), d1
-	cmp.w	d0, d1
-	beq.s	PaletteContainsSet_ForEachColourSetEntry_Next ; Now compare (sp) to 6(sp) - If they're equal, bail out early as this colour is in the palette
-
-	; And we get here if the colours are not equal, keep looking
-	move.w	4(sp), d0
-	dbeq 	d0, PaletteContainsSet_ForEachColourSetEntry_ForEachPaletteEntry
-
-	; Here, we looked through the palette for the colour at (sp) but it was not in the palette.
-	; One colour not in the palette means this palette does not fit.
-	bra.s	PaletteContainsSet_ReturnFalse
-
-PaletteContainsSet_ForEachColourSetEntry_Next:
-	move.w	2(sp), d0
-	dbeq	d0, PaletteContainsSet_ForEachColourSetEntry	; Loop and jump out if we run out of items
-
-	; Well, we made it here and never had to branch to return false
-	; So the set must fit fully within the palette
-	move.w	#1, d0
-	bra.s PaletteContainsSet_Finally
-
-PaletteContainsSet_ReturnFalse:
-	move.w	#0, d0
-
-PaletteContainsSet_Finally:
-	PopStack 8
-	RestoreFramePointer
+	move.l	#ISOBLENDER_PAL_HASHTABLE, a0
+	move.w	#( ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE / 2 ) - 1, d0
+InitHashtables_Loop2:
+	move.w	#$FFFF, (a0)+
+	dbeq	d0, InitHashtables_Loop2
 	rts
 
-; Given an index and a tile row, return one of 8 4-bit nibbles in the longword
-; 00 ii - Index of nibble (0-7)
-; ll ll ll ll - Tile row
-; Returns: 00 nn - Nibble in the longword
-GetTileNibble:
-	move.l	6(sp), d0
-
-GetTileNibble_Loop:
-	tst.w	4(sp)
-	beq.s	GetTileNibble_Filter
-
-	lsr.l	#4, d0 			; Shift nibble over
-
-	sub.w	#1, 4(sp)
-	bra.s	GetTileNibble_Loop
-
-GetTileNibble_Filter:
-	andi.l	#$0000000F, d0	; All we want is the last nibble
-	rts
-
-; Given an index and tile row, and replacement value, swap the nibble for the provided nibble.
-; 00 ii - Index of nibble (0-7)
-; 00 rr - Replacement value for this nibble
-; ll ll ll ll - Longword
-; Returns: ll ll ll ll - Longword with nibble replaced
-SetTileNibble:
-	move.l	#$0000000F, d0	; NOT mask
-	move.l	#0, d1
-	move.w	6(sp), d1		; Value we will be overlaying onto longword
-
-SetTileNibble_Loop:
-	tst.w	4(sp)
-	beq.s	SetTileNibble_Set
-
-	lsl.l	#4, d0
-	lsl.l	#4, d1			; Move both down the longword
-
-	sub.w	#1, 4(sp)
-	bra.s	SetTileNibble_Loop
-
-SetTileNibble_Set:
-	not.l	d0				; Invert to create a mask
-	and.l 	d0, 8(sp)		; Use mask to remove nibble we are replacing
-	or.l	d1, 8(sp)		; Overlay the nibble at the desired location
-
-	move.l	8(sp), d0		; Return value
+; Using Pearson hash, insert the given pal/col (PALlete/COLour) byte into the hashtable.
+; 00 pc - Upper nibble of byte has palette (1-3), lower nibble of byte has index (1-15)
+PaletteHashtableInsert:
+	move.l	#ISOBLENDER_PAL_HASHTABLE, a0
 	rts
 
 	endif

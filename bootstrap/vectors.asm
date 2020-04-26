@@ -30,7 +30,7 @@
   dc.l	TrapException	; Interrupt request level 5
   dc.l	VBlank			; Interrupt request level 6 (VDP interrupt/VBlank)
   dc.l	TrapException	; Interrupt request level 7 (highest priority)
-  dc.l	TrapException	; TRAP #00 exception
+  dc.l	UserError	    ; TRAP #00 exception
   dc.l	TrapException	; TRAP #01 exception
   dc.l	TrapException	; TRAP #02 exception
   dc.l	TrapException	; TRAP #03 exception

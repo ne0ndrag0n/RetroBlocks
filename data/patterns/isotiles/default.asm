@@ -186,6 +186,152 @@ IsoTiles_default_dirt_Tiledata:
 	dc.l $00000000
 	dc.l $00000000
 
+	; Overlay masks
+	; All these are always (32 * 16) bytes away from the current one
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFF0
+	dc.l $FFFFF000
+	dc.l $FFF00000
+	dc.l $F0000000
+
+	dc.l $FFFFFFF0
+	dc.l $FFFFF000
+	dc.l $FFF00000
+	dc.l $F0000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $0FFFFFFF
+	dc.l $000FFFFF
+	dc.l $00000FFF
+	dc.l $0000000F
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $0FFFFFFF
+	dc.l $000FFFFF
+	dc.l $00000FFF
+	dc.l $0000000F
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+
+	dc.l $00000000
+	dc.l $FF000000
+	dc.l $FFFF0000
+	dc.l $FFFFFF00
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $FF000000
+	dc.l $FFFF0000
+	dc.l $FFFFFF00
+
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $00000000
+	dc.l $000000FF
+	dc.l $0000FFFF
+	dc.l $00FFFFFF
+
+	dc.l $00000000
+	dc.l $000000FF
+	dc.l $0000FFFF
+	dc.l $00FFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+	dc.l $FFFFFFFF
+
 	; Palettes
 IsoTiles_default_dirt_Palette:
 	dc.w $0000
