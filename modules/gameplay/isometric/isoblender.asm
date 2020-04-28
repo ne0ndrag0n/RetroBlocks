@@ -73,6 +73,13 @@ ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE = 30
 		PopStack 8
 	endm
 
+	macro IsoblenderPaletteHashtableInsert
+		move.w	\2, -(sp)
+		move.w	\1, -(sp)
+		bsr	PaletteHashtableInsert
+		PopStack 4
+	endm
+
 ; Render the board to the VRAM nametables + patterns, given the world origin point.
 ; The world will be rendered in a rectangular cutout beginning at the top right.
 ; xx yy	- Coordinates
@@ -241,20 +248,115 @@ InitHashtables:
 	move.l	#ISOBLENDER_TILE_HASHTABLE, a0
 	move.w	#( ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE / 2 ) - 1, d0
 InitHashtables_Loop:
-	move.w	#$FFFF, (a0)+
+	move.w	#$FFFF, (a0)+				; FFFF is the sentinel value in the tile hashtable
 	dbeq	d0, InitHashtables_Loop
 
 	move.l	#ISOBLENDER_PAL_HASHTABLE, a0
 	move.w	#( ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE / 2 ) - 1, d0
 InitHashtables_Loop2:
-	move.w	#$FFFF, (a0)+
+	move.w	#$0000, (a0)+				; 00 is the sentinel value in the pal/col hashtable
 	dbeq	d0, InitHashtables_Loop2
 	rts
 
 ; Using Pearson hash, insert the given pal/col (PALlete/COLour) byte into the hashtable.
-; 00 pc - Upper nibble of byte has palette (1-3), lower nibble of byte has index (1-15)
+; 0c cc - Colour (used as key)
+; 00 pi - Upper nibble of byte has palette (0-2 *user palette* index), lower nibble of byte has index (1-15) (used as value)
 PaletteHashtableInsert:
+	move.l	sp, d0
+	addi.l	#4, d0
+	MathPearsonHash d0, #2
+
+	; d0 now contains bucket index
+	; Find first 00 element in the bucket, and overwrite it
+
 	move.l	#ISOBLENDER_PAL_HASHTABLE, a0
+	andi.l	#$000000FF, d0
+	mulu.w	#ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE, d0
+	add.l	d0, a0
+
+	move.w	#( ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE - 1 ), d1
+
+PaletteHashtableInsert_Loop:
+	cmpi.b	#0, (a0)
+	beq.s	PaletteHashtableInsert_Found
+
+	add.l	#1, a0
+
+	dbeq	d1, PaletteHashtableInsert_Loop
+
+	; Free spot in bucket not found.
+	; Throw trap #00 and freeze at UserError in debugger - This is a program bug
+	trap 	#0
+
+PaletteHashtableInsert_Found:
+	move.b	7(sp), (a0)		; Set value in bucket
+	rts
+
+; Given a colour, return a longword representing the index of the colour in each of the three palettes.
+; If the colour does not occur in the palette, the index for that entry will be 00.
+; 0c cc - Colour to search for in palettes.
+; aa aa aa aa - Address of VRAM palette dump structure. Used to verify that the entry in the bucket is the same colour.
+; Returns: 00 ff ss tt
+;             |  |  |
+;             |  | Index of colour in third palette
+;             | Index of colour in second palette
+;            Index of colour in first palette
+GetPaletteIndices:
+	SetupFramePointer
+
+	move.l	#0, -(sp)		; (sp) The result colours
+
+	move.l 	sp, d1
+	addi.l	#4 + 4, d1
+	MathPearsonHash d1, #2	; Get hash of sample colour
+
+	; Byte in d0 now contains the bucket index
+	move.l	#ISOBLENDER_PAL_HASHTABLE, a0
+	andi.l	#$000000FF, d0
+	mulu.w	#ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE, d0
+	add.l	d0, a0
+
+	; a0 now contains bucket address
+	; Search bucket until we hit a 00 byte or exceed the bucket size
+	move.w	#( ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE - 1 ), d1
+	andi.l	#$000000FF, d0			; Go ahead and clean up d0 again for byte operations
+GetPaletteIndices_SearchBucket:
+	move.b	(a0), d0
+
+	tst.b	d0
+	beq.s	GetPaletteIndices_Finally	; 00 = sentinel value to stop
+
+	; Get palette index and convert that to a base address we can hop to
+	andi.b	#$F0, d0
+	lsl.b	#1, d0		; Only need to mask + shift it over by 1 to get the palette offset!
+
+	move.l	6(fp), a1
+	add.l	d0, a1		; Get address of palettes and add offset computed in previous step
+
+	move.b	(a0), d0
+	andi.b	#$0F, d0	; Now grab bucket value again and take only the palette offset
+	lsl.b	#1, d0		; Multiply it by 2 to get byte index from word index
+	add.l	d0, a1		; Increment palette pointer to the exact location of the colour
+
+	move.w	(a1), d0	; d0 = the colour at that location
+	cmp.w	4(fp), d0
+	bne.s	GetPaletteIndices_Next
+
+	; If we got here, that's a hit for this bucket entry
+	; Increment the counter for the given palette
+
+	move.b	(a0), d0
+	andi.b	#$F0, d0
+	lsr.b	#4, d0			; This time we want the raw number of the palette
+
+	addi.b	#1, 1(sp, d0)	; Increment the right value in the result longword
+
+GetPaletteIndices_Next:
+	dbeq	d1, GetPaletteIndices_SearchBucket
+
+GetPaletteIndices_Finally:
+	move.l	(sp)+, d0		; Result counter goes from stack to result register
+	RestoreFramePointer
 	rts
 
 	endif
