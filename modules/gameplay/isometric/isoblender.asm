@@ -352,6 +352,7 @@ GetPaletteIndices_SearchBucket:
 	addi.b	#1, 1(sp, d0)	; Increment the right value in the result longword
 
 GetPaletteIndices_Next:
+	add.l	#1, a0
 	dbeq	d1, GetPaletteIndices_SearchBucket
 
 GetPaletteIndices_Finally:
