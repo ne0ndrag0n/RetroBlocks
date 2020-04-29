@@ -343,13 +343,20 @@ GetPaletteIndices_SearchBucket:
 	bne.s	GetPaletteIndices_Next
 
 	; If we got here, that's a hit for this bucket entry
-	; Increment the counter for the given palette
+	; For the given palette, attach the palette index number to the byte entry
 
 	move.b	(a0), d0
 	andi.b	#$F0, d0
 	lsr.b	#4, d0			; This time we want the raw number of the palette
 
-	addi.b	#1, 1(sp, d0)	; Increment the right value in the result longword
+	move.l	sp, a1
+	add.l	#1, a1
+	add.l	d0, a1			; a1 = the destination byte = sp + 1 + the offset
+
+	move.b	(a0), d0
+	andi.b	#$0F, d0		; Grab palette index (word)
+
+	move.b	d0,	(a1)		; Write the palette entry index into the right palette slot
 
 GetPaletteIndices_Next:
 	add.l	#1, a0
