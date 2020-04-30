@@ -345,6 +345,8 @@ GetPaletteIndices_SearchBucket:
 	; If we got here, that's a hit for this bucket entry
 	; For the given palette, attach the palette index number to the byte entry
 
+	move.l	#0, d0			; Clear the register
+
 	move.b	(a0), d0
 	andi.b	#$F0, d0
 	lsr.b	#4, d0			; This time we want the raw number of the palette
