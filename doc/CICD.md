@@ -13,7 +13,7 @@ xvfb-run \
 mame \
 	genesis \
 	-debug \
-	-debugscript cicd/build.mds \
+	-debugscript testsuite/build.mds \
 	-cart out.bin \
 	-video none \
 	-seconds_to_run 5 \

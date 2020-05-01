@@ -6,9 +6,20 @@
 	include 'testsuite/util.asm'
 
 BeginTests:
+
+QuickExample:
 	move.w	#$DEAD, d0
 
-	TestsuiteReportPass #$B0
+	cmpi.w	#$DEAD, d0
+	beq.s	QuickExample_Success
+
+	TestsuiteReportFail #0
+	bra.s TestsComplete
+
+QuickExample_Success:
+	TestsuiteReportPass #0
+
+TestsComplete:
 	TestsuiteEmulatorExit
 
 	; contingency
