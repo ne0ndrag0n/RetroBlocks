@@ -1,2 +1,5 @@
 wp A14102,1,w,wpdata == 1,{quit}
+wp A14102,1,w,wpdata == 2,{logerror "test<passed>\n"; go}
+wp A14102,1,w,wpdata == 3,{logerror "test<failed>\n"; go}
+wp A14103,1,w,1,{ logerror "executing<%d>\n",wpdata; go}
 go

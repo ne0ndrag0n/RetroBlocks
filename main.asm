@@ -6,7 +6,6 @@
   include 'bootstrap/init.asm'
 
   ifd TESTSUITE
-  jmp TESTSUITE_FUNCTION
   include 'testsuite/main.asm'
   else
   jmp RenderThread

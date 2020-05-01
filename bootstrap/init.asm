@@ -57,5 +57,8 @@ InitEcho:
   lea     SndPointerList, a0
   bsr.w   Echo_Init
 
+	ifnd TESTSUITE
 	ThreaderInit
+	endif
+
 	EnableInterrupts
