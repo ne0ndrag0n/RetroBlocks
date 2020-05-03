@@ -294,20 +294,23 @@ PaletteHashtableInsert_Found:
 
 ; Given a colour, return a longword representing the index of the colour in each of the three palettes.
 ; If the colour does not occur in the palette, the index for that entry will be 00.
+;
+; NOTE: Results undefined for palettes containing duplicate entries (this should not occur in normal isoblender operation)
+;
 ; 0c cc - Colour to search for in palettes.
 ; aa aa aa aa - Address of VRAM palette dump structure. Used to verify that the entry in the bucket is the same colour.
-; Returns: 00 ff ss tt
-;             |  |  |
-;             |  | Index of colour in third palette
-;             | Index of colour in second palette
-;            Index of colour in first palette
+; Returns: 0t sf
+;			t - 1-15 index in third palette
+;			s - 1-15 index in second palette
+;			f - 1-15 index in first palette
 GetPaletteIndices:
 	SetupFramePointer
 
-	move.l	#0, -(sp)		; (sp) The result colours
+	move.w	#0, -(sp)		; 2(sp) The current index of the bucket search
+	move.w	#0, -(sp)		; (sp) The result colours
 
-	move.l 	sp, d1
-	addi.l	#4 + 4, d1
+	move.l 	fp, d1
+	addi.l	#4, d1
 	MathPearsonHash d1, #2	; Get hash of sample colour
 
 	; Byte in d0 now contains the bucket index
@@ -321,7 +324,9 @@ GetPaletteIndices:
 	move.w	#( ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE - 1 ), d1
 	andi.l	#$000000FF, d0			; Go ahead and clean up d0 again for byte operations
 GetPaletteIndices_SearchBucket:
-	move.b	(a0), d0
+	move.w	d1, 2(sp)				; Rewrite d1 to 2(sp) for dbeq instruction
+
+	move.b	(a0), d0				; Current byte from current bucket
 
 	tst.b	d0
 	beq.s	GetPaletteIndices_Finally	; 00 = sentinel value to stop
@@ -349,23 +354,25 @@ GetPaletteIndices_SearchBucket:
 
 	move.b	(a0), d0
 	andi.b	#$F0, d0
-	lsr.b	#4, d0			; This time we want the raw number of the palette
+	lsr.b	#2, d0			; This time we want the raw number of the palette, then multiply it by 4 bits
+							; Shift right 4, then we'd need to shift left by 2 to multiply by 4
+							; Therefore, only shift right by 2
 
-	move.l	sp, a1
-	add.l	#1, a1
-	add.l	d0, a1			; a1 = the destination byte = sp + 1 + the offset
-
-	move.b	(a0), d0
-	andi.b	#$0F, d0		; Grab palette index (word)
-
-	move.b	d0,	(a1)		; Write the palette entry index into the right palette slot
+	move.w	#0, d1
+	move.b	(a0), d1
+	andi.b	#$0F, d1		; Grab palette index (word)
+	lsl.w	d0, d1			; Shift left by the user palette amount * 4 (already bitshifted above)
+	or.w	d1, (sp)		; "OR" the result onto the result word
 
 GetPaletteIndices_Next:
 	add.l	#1, a0
+
+	move.w	2(sp), d1		; Service 2(sp) using d1 register
 	dbeq	d1, GetPaletteIndices_SearchBucket
 
 GetPaletteIndices_Finally:
-	move.l	(sp)+, d0		; Result counter goes from stack to result register
+	move.w	(sp)+, d0		; Result counter goes from stack to result register
+	PopStack 2
 	RestoreFramePointer
 	rts
 
