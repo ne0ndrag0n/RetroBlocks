@@ -1,1 +1,1 @@
-	include 'testsuite/tests/01_example.asm'
+   include 'testsuite/tests/01_example.asm'
