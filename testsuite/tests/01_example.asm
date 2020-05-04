@@ -4,10 +4,10 @@ Test1:
 	cmpi.w	#$DEAD, d0
 	beq.s	QuickExample_Success
 
-	TestsuiteReportFail #0
+	TestsuiteReportFail
 	bra.s QuickExample_TestsComplete
 
 QuickExample_Success:
-	TestsuiteReportPass #0
+	TestsuiteReportPass
 
 QuickExample_TestsComplete:
