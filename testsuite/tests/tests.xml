@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<!-- <failure type="NotEnoughFoo"> details about failure </failure> -->
-<testsuite>
-    <testcase classname="01_example" name="(Example) Verify register d0 is able to contain value #$DEAD"/>
-</testsuite>
