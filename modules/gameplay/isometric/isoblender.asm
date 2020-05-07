@@ -246,13 +246,13 @@ GetRomBlockAddress_Finally:
 ;	* A usermode exception is thrown when a bucket is full.
 InitHashtables:
 	move.l	#ISOBLENDER_TILE_HASHTABLE, a0
-	move.w	#( ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE / 2 ) - 1, d0
+	move.w	#( (ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE*255) / 2 ) - 1, d0
 InitHashtables_Loop:
 	move.w	#$FFFF, (a0)+				; FFFF is the sentinel value in the tile hashtable
 	dbeq	d0, InitHashtables_Loop
 
 	move.l	#ISOBLENDER_PAL_HASHTABLE, a0
-	move.w	#( ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE / 2 ) - 1, d0
+	move.w	#( (ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE*255) / 2 ) - 1, d0
 InitHashtables_Loop2:
 	move.w	#$0000, (a0)+				; 00 is the sentinel value in the pal/col hashtable
 	dbeq	d0, InitHashtables_Loop2
