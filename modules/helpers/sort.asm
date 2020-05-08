@@ -28,8 +28,6 @@ CocktailShaker_ForwardLoop:
 	cmp.b	2+9(sp), d0
 	beq.s	CocktailShaker_BackLoop			; Jump to the back loop
 
-	addi.b	#1, (sp)						; Increment counter by 1
-
 	move.b	(a0)+, d0						; Check if current value is greater than the next value
 	cmp.b	(a0), d0
 	bls.s	CocktailShaker_ForwardLoop
@@ -43,13 +41,12 @@ CocktailShaker_ForwardLoop:
 	add.l	#1, a0							; Work around vasm bug
 	move.b	d0, (a0)						; Move value that was before, after
 
+	addi.b	#1, (sp)						; Increment counter by 1
 	bra.s	CocktailShaker_ForwardLoop		; Next item
 
 CocktailShaker_BackLoop:
 	tst.b	(sp)
 	beq.s	CocktailShaker_CheckSwapped		; Don't actually encounter the last item
-
-	subi.b	#1, (sp)						; Decrement counter
 
 	move.b	(a0), d0
 	sub.l	#1, a0							; Get value at counter
@@ -69,6 +66,7 @@ CocktailShaker_BackLoop:
 	sub.l	#1, a0
 	move.b	d0, (a0)						; Lower value gets moved down
 
+	subi.b	#1, (sp)						; Decrement counter
 	bra.s	CocktailShaker_BackLoop			; Next item
 
 CocktailShaker_CheckSwapped:
