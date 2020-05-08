@@ -193,8 +193,14 @@ StampBlock:
 GetBlockTilePalette:
 	SetupFramePointer
 
-	; TODO
+	move.w 	#0, -(sp)	; (sp) Padding byte
+						; 1(sp) PAL3 count of matching colours
+						; 2(sp) PAL2 count of matching colours
+						; 3(sp) PAL1 count of matching colours
 
+
+
+	; TODO
 	RestoreFramePointer
 	rts
 
@@ -292,7 +298,7 @@ PaletteHashtableInsert_Found:
 	move.b	7(sp), (a0)		; Set value in bucket
 	rts
 
-; Given a colour, return a longword representing the index of the colour in each of the three palettes.
+; Given a colour, return a word representing the index of the colour in each of the three palettes.
 ; If the colour does not occur in the palette, the index for that entry will be 00.
 ;
 ; NOTE: Results undefined for palettes containing duplicate entries (this should not occur in normal isoblender operation)
