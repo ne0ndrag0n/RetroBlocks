@@ -1,27 +1,36 @@
 	ifnd H_GAMEPLAY_ISOMETRIC_ISOBLENDER
 H_GAMEPLAY_ISOMETRIC_ISOBLENDER = 1
 
-; Distributing colours across the three usermode palettes is a bin packing problem which is np-hard
-;1. Copy palette of tile from ROM
-;2. Determine if this palette fully fits into the target tile's palette. Lookup each colour in hashtable.
-;   If it does, go to step 3
-;   If it does not, go to step 6
-;3. In the tile from ROM, update nibbles to correspond with their colours in the target tile's palette.
-;4. OR the resulting tile over the existing tile
-;5. Grab new tile + palette struct from ROM and go back to 1
-;
-;6. Attempt to insert new colours into the target tile's existing palette.
-;    If they fit, go to step 3.
-;    If they don't fit, go to step 7
-;7. Begin dropping colours from the tile in order to reduce the load it places on the palettes.
-;    Take the colour that occurs the least in this palette (e.g. a single blue pixel for water in the corner) and change
-;    occurrences of it to transparency (0). Then, drop the colour from the colour set required for the new tile.
-;
-;    Repeat the process from step 2.
-;
-; * For index 0 nametable entries, find the nearest palette that can contain the new ROM subpalette.
-;   This is where the entry point is for tiles' palettes. Use hashtable to determine if subpalette fits into each palette.
-;   If no palettes can contain the entry, we drop the tile.
+; Process of stamping tile:
+
+; 1. Create a local buffer for tile due to be stamped or evaluated (zero-out).
+; If there is an existing palette (destination tile palette is nonzero):
+;   * Existing palette = existing tile. Dump the tile to local buffer.
+; If there is not an existing palette (destination tile palette is zero):
+;   * Copy ROM tile to local buffer.
+
+; 2. Find a palette for the incoming tile.
+; If there is an existing palette (destination tile palette is nonzero):
+; 	* Attempt to add colours to existing palette's free space (reusing existing colours in the process).
+;   * If we can't, drop the least common colours from the palette and reattempt above process.
+;     This will end up modifying the original tile - nibbles containing least common colour turn to "0"
+; If there is not an existing palette (destination tile palette is zero):
+;   * Using the color list for the ROM tile, assign a palette that has both the most overlap and most free space.
+;   * If we can't do this, drop least common pixel from buffer, and repeat above process until it fits.
+
+; 3. Build a local copy of the tile using the resulting tile.
+; If there is an existing tile:
+;   * Overlay incoming tile's nonzero nibbles over buffer's nibbles.
+;	  As we go, replace nibbles with the correlates in the palette.
+;   * Take Pearson hash of the tile contained in the buffer and determine
+;     if it is already present in VRAM.
+;		* If it is, use it.
+;		* If it isn't, create a new tile and send it to VRAM, then use it.
+; If there is not an existing tile:
+;   * Take Pearson hash of the tile contained in the buffer and determine
+;     if it is already present in VRAM.
+;		* If it is, use it.
+;		* If it isn't, create a new tile and send it to VRAM, then use it.
 
 ISOBLENDER_TILE_HASHTABLE = $FF0100
 ISOBLENDER_TILE_HASHTABLE_BUCKET_SIZE = 100
@@ -170,37 +179,91 @@ RenderBoard_Finally:
 StampBlock:
 	SetupFramePointer
 
-	move.l	#0, -(sp)		; 36(sp) - Address of the block we are stamping
+	move.w	#0, -(sp)		; 44(sp) - x value to add to nametable per tile iteration
+							; 45(sp) - y value to add to nametable per tile iteration
+	move.l	#0, -(sp)		; 40(sp) - Address of the current tile we are working on
+	move.l	#0, -(sp)		; 36(sp) - Address of the palette for all subsequent tiles
 	move.w	#0, -(sp)		; 34(sp) - Target nametable entry per iteration
-	move.w	#$0404, -(sp)	; 32(sp) - x, y tiles remaining
-	Allocate #32			; (sp) - Current block being worked on
+	move.w	#$0303, -(sp)	; 32(sp) - x tiles remaining
+							; 33(sp) - y tile remaining
+	Allocate #32			; (sp) - Local buffer for block due to be stamped
 
 	IsoblenderGetRomBlockAddress 6(fp)
-	move.l	d0, 36(sp)					; Get and save the ROM block address
+	addi.l	#2, d0						; Skip the status flag
+	move.l	d0, a0
+	move.l	(a0)+, 36(sp)				; Save the pointer in ROM to local palette pointer
+										; Postincrement
 
-	; TODO use IsoblenderGetRomBlockAddress on the second argument
+	move.l  a0, 40(sp)					; Save the value of a0 as the first tile to be processed
 
-	PopStack 32 + 8
-	RestoreFramePointer
-	rts
+	; Stamp each tile bound by the Y-value in 32(sp)
+	move.b	33(sp), d0
+StampBlock_ForEachTileY:
+	move.b	d0, 33(sp)
 
-; Given a tile's palette and the total list of VRAM palettes, get a palette for the given ROM tile palette,
-; and adjust VRAM palettes as necessary.
-; pp pp - Plane nametable entry
-; rr rr rr rr - Palette associated with incoming ROM tile + header
-; aa aa aa aa - Address of 96-byte VRAM palette dump + longword at end detailing free space remaining
-; Returns: 00 ii - Palette offset (00, 20, or 40)
-GetBlockTilePalette:
-	SetupFramePointer
+	move.b	#3, 32(sp)						; 4 x-tile stamps for every row
+	move.b	32(sp), d0
+StampBlock_ForEachTileX:
+	move.b	d0, 32(sp)
 
-	move.w 	#0, -(sp)	; (sp) Padding byte
-						; 1(sp) PAL3 count of matching colours
-						; 2(sp) PAL2 count of matching colours
-						; 3(sp) PAL1 count of matching colours
+	; 1. Create a local buffer for tile due to be stamped or evaluated (zero-out).
+	Deallocate #32
+	rept 8
+	move.l	#0, -(sp)
+	endr									; Erase buffer for tile
 
+	; Now need to determine if there is already a tile at this nametable entry
+	; We do this by going off whether or not the full word is 0
+	move.w	#0, d0
+	move.b	32(sp), d0
+	subi.w	#3, d0
+	MathAbs d0
+	move.b	d0, 44(sp)						; Subtract 3 from x remaining and take abs
 
+	move.w	#0, d0
+	move.b	33(sp), d0
+	subi.w	#3, d0
+	MathAbs d0
+	move.b	d0, 45(sp)						; Subtract 3 from y remaining and take abs
 
-	; TODO
+	move.b	4(fp), d0
+	add.b	d0, 44(sp)						; Add original X to X adjustment
+
+	move.b	5(fp), d0
+	add.b	d0, 45(sp)						; Add original Y to Y adjustment
+
+	VdpGetNametableEntry 44(sp), #VDP_GAMEPLAY_PLANE_B	; Get the nametable word
+	move.w	d0, 34(sp)						; Save it
+
+	tst.w	d0
+	beq.s	StampBlock_ForEachTileX_NewTile	; If the word is 0, it's a new tile.
+
+StampBlock_ForEachTileX_ExistingTile:
+	; Dump tile to local buffer
+	andi.w	#$07FF, d0						; Clear all info except the tile ID
+	VdpCopyVramTile d0, sp					; Dump tile of this ID
+
+	; Attempt to add colours to existing palette's free space (reusing existing colours in the process).
+	; TODO: Call IsoblenderAddPalette
+
+	; If IsoblenderAddPalette returns 0, the incoming palette did not fit
+	; Call IsoblenderDropLeastCommon on the dumped tile and repeat until it does fit.
+
+	; ...
+	bra.s	StampBlock_ForEachTileX_NextX
+
+StampBlock_ForEachTileX_NewTile:
+	; ...
+	nop
+
+StampBlock_ForEachTileX_NextX:
+	move.b	32(sp), d0
+	dbeq	d0, StampBlock_ForEachTileX
+
+	move.b	33(sp), d0
+	dbeq	d0, StampBlock_ForEachTileY
+
+	PopStack 32 + 14
 	RestoreFramePointer
 	rts
 
