@@ -89,6 +89,19 @@ ISOBLENDER_PAL_HASHTABLE_BUCKET_SIZE = 30
 		PopStack 4
 	endm
 
+	macro IsoblenderGetPaletteIndices
+		move.l	\2, -(sp)
+		move.w	\1, -(sp)
+		bsr GetPaletteIndices
+		PopStack 6
+	endm
+
+	macro IsoblenderGetPaletteFreeSpace
+		move.l	\1, -(sp)
+		bsr GetPaletteFreeSpace
+		PopStack 4
+	endm
+
 ; Render the board to the VRAM nametables + patterns, given the world origin point.
 ; The world will be rendered in a rectangular cutout beginning at the top right.
 ; xx yy	- Coordinates
@@ -244,7 +257,7 @@ StampBlock_ForEachTileX_ExistingTile:
 	VdpCopyVramTile d0, sp					; Dump tile of this ID
 
 	; Attempt to add colours to existing palette's free space (reusing existing colours in the process).
-	; TODO: Call IsoblenderAddPalette
+	; TODO: Call IsoblenderAddColorsToPalette
 
 	; If IsoblenderAddPalette returns 0, the incoming palette did not fit
 	; Call IsoblenderDropLeastCommon on the dumped tile and repeat until it does fit.
@@ -443,6 +456,100 @@ GetPaletteIndices_Finally:
 	move.w	(sp)+, d0		; Result counter goes from stack to result register
 	PopStack 2
 	RestoreFramePointer
+	rts
+
+; Given a palette, add the colours to the palette, skipping colours that are already in the given palette.
+; a1 a1 a1 a1 - Address of the incoming palette
+; aa aa aa aa - Address of VRAM palette structure
+; 00 ii - Index of the destination palette
+; Returns: 00 bb - 1 if the operation was successful, 0 if not.
+AddColorsToPalette:
+	SetupFramePointer
+
+	move.l	#0, -(sp)		; 2(sp) Address-sized scratch space
+	move.w	#0, -(sp)		; (sp) Number of colours shared across both palettes
+							; 1(sp) Loop counter, various loops
+
+	; Get the amount of colours the destination palette shares with the incoming palette.
+	move.l	4(fp), a0
+	add.l	#1, a0			; Incoming palette address, and skip first item which is always 0000
+
+AddColorsToPalette_Loop:
+	tst.w	(a0)
+	beq.s	AddColorsToPalette_Loop_End		; End when 0000 is encountered
+
+	move.l	a0, 2(sp)		; Save a0 when we go into calling GetPaletteIndices
+	IsoblenderGetPaletteIndices (a0), 8(fp)
+	move.l	2(sp), a0		; Put it right back
+
+	; If result of IsoblenderGetPaletteIndices is 0, then we can quickly determine
+	; that the colour does not exist in the target palette (or any other palette).
+	tst.w 	d0
+	beq.s	AddColorsToPalette_EntryNotInTargetPalette
+
+	; If the result of IsoblenderGetPaletteIndices is non-0, we need to determine
+	; if it falls within the index of the destination palette by removing all other
+	; palettes it occurs in. If the result of that `andi` operation is nonzero,
+	; then the colour occurs in the target palette.
+
+	move.w	12(fp), d1		; Move palette index to d1
+	lsl.w	#1, d1			; Times 2
+	move.w	AddColorsToPalette_JumpTable( pc, d1.w ), d1
+	jmp		AddColorsToPalette_JumpTable( pc, d1.w )		; Apply jump table
+
+AddColorsToPalette_JumpTable:
+	dc.w	AddColorsToPalette_FirstPaletteMask - AddColorsToPalette_JumpTable
+	dc.w 	AddColorsToPalette_SecondPaletteMask - AddColorsToPalette_JumpTable
+	dc.w	AddColorsToPalette_ThirdPaletteMask - AddColorsToPalette_JumpTable
+
+AddColorsToPalette_FirstPaletteMask:
+	andi.w	#$000F, d0
+	bra.s	AddColorsToPalette_CheckEntry
+
+AddColorsToPalette_SecondPaletteMask:
+	andi.w	#$00F0, d0
+	bra.s	AddColorsToPalette_CheckEntry
+
+AddColorsToPalette_ThirdPaletteMask:
+	andi.w	#$0F00, d0
+
+AddColorsToPalette_CheckEntry:
+	; Nonzero = Color already exists in palette
+	tst.w	d0
+	beq.s	AddColorsToPalette_EntryNotInTargetPalette
+
+AddColorsToPalette_EntryInTargetPalette:
+	; Well, there's nothing to really do here except go to the next one
+	nop
+
+AddColorsToPalette_EntryNotInTargetPalette:
+	; TODO
+	nop
+
+AddColorsToPalette_Loop_End:
+	PopStack 6
+	RestoreFramePointer
+	rts
+
+; Count the number of free items in the given palette. This assumes a *compacted* palette, meaning that the free space
+; begins at the first 0000 entry *that is not located at index 0.*
+; aa aa aa aa - The palette
+; Returns: 00 cc - Amount of free items in the palette.
+GetPaletteFreeSpace:
+	move.l	4(sp), a0
+	add.l	#2, a0		; Skip index #0
+
+	move.w	#15, d0		; Assume 15 free entries
+	move.w	#14, d1		; Loop through items 1-15 only
+
+GetPaletteFreeSpace_Loop:
+	tst.w	(a0)+
+	beq.s	GetPaletteFreeSpace_Finally
+
+	subi.w	#1, d0		; Item was in use
+	dbeq	d1, GetPaletteFreeSpace_Loop
+
+GetPaletteFreeSpace_Finally:
 	rts
 
 	endif

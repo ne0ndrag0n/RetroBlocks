@@ -2,7 +2,7 @@
 H_DATA_MOD = 1
 
 
-  ORG $00003000
+  ORG $00004000
   include 'data/patterns/mod.asm'
   include 'data/palettes/mod.asm'
   include 'data/instruments/mod.asm'
