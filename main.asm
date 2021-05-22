@@ -5,11 +5,7 @@
   include 'bootstrap/headers.asm'
   include 'bootstrap/init.asm'
 
-  ifd TESTSUITE
-  include 'testsuite/main.asm'
-  else
   jmp RenderThread
-  endif
 
 BusError:
   rte
@@ -33,11 +29,7 @@ ExternalInterrupt:
 HBlank:
   rte
 
-  ifd TESTSUITE
-  include 'testsuite/test_vblank.asm'
-  else
   include 'modules/interrupts/vblank.asm'
-  endif
 
   include 'lib/echo.asm'
   include 'modules/mod.asm'
