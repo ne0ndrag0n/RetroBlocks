@@ -12,3 +12,4 @@
  include 'modules/worldgen/mod.asm'
  include 'modules/threader/mod.asm'
  include 'modules/gameplay/mod.asm'
+ include 'modules/framebuffer/mod.asm'
