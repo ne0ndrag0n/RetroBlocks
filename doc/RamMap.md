@@ -51,4 +51,21 @@ Memory Map
 | F000    | 4096  | Free/Unused            |
 
 
+## Framebuffer (Gameplay) State
+
+| Address | Bytes | Meaning                |
+|---------|-------|------------------------|
+| ...     | ...   | (all modes data)       |
+| 0C00    | 35840 | Framebuffer Data       |
+| 9800    | 8176  | UI Patterns/Art        |
+| B7F0    | 16    | Sprite Metadata        |
+| B800    | 640   | Sprite Attribute Table |
+| BA80    | 384   | Free/Unused            |
+| BC00    | 1024  | HScroll Table          |
+| C000    | 4096  | Plane A Nametable      |
+| D000    | 4096  | Window Nametable       |
+| E000    | 4096  | Plane B Nametable      |
+| F000    | 4096  | Free/Unused            |
+
+
 <sup>1</sup> Tiles in VRAM are indexed in 32-byte segments. The font runs from $00 to $5F using this system.
