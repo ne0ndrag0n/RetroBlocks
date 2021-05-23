@@ -17,8 +17,8 @@ Memory Map
 | FF0020  | 72    | THREADER_MAIN_CONTEXT          | Process Control Block, Main Thread          |
 | FF0068  | 72    | THREADER_BACK_CONTEXT          | Process Control Block, Background Thread    |
 | FF00B0  | 80    | VDP_DMAQUEUE_START             | DMA Queue                                   |
-| FF0100  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
-| FF8D00  | 21247 | (none)                         | Free/Unused                                 |
+| FF0100  | 21248 | (none)                         | Free/Unused								 |
+| FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
 | FFE000  | 4096  | THREAD_BACK_STACK<sup>2</sup>  | Background Thread Stack					 |
 | FFF000  | 4096  | THREAD_MAIN_STACK<sup>2</sup>  | Main Thread Stack							 |
 

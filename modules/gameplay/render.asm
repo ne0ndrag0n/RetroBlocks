@@ -11,10 +11,7 @@ RenderThread_ControllerInput:
 	beq.s 	RenderThread_ControllerInput
 
 RenderThread_VdpSwitch:
-	VdpClearVram		#$F3FF / 2, #$0C00
-	VdpSendCommandList 	#VdpGameplayState, #( (VdpGameplayState_End - VdpGameplayState)/2 ) - 1
-
-	VdpDrawText #$0000, #VDP_GAMEPLAY_PLANE_A, #String_LongTest
+	jsr InitFramebuffer
 
 RenderThread_EternalLoop:
 	jmp RenderThread_EternalLoop
