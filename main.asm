@@ -37,6 +37,6 @@ HBlank:
   include 'constants/en_US.asm'
 
 RomEnd:
-  ORG $00020000
+  ORG $00070000
   dc.b %11111111
   end 0

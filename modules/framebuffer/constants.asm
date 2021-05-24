@@ -1,7 +1,7 @@
 	ifnd H_FRAMEBUFFER_CONSTANTS
 H_FRAMEBUFFER_CONSTANTS = 1
 
-FRAMEBUFFER = $FF5400
+FRAMEBUFFER = $FF5400	; @framebuffer_location
 FRAMEBUFFER_CONTROL_WORD = $4C000080
 
 ; 40 columns, times 28 rows, times 32 bytes per tile = 35840

@@ -60,6 +60,10 @@ InitFramebuffer_X:
 ; Plot pixel at the given location.
 ; xx xx yy 0c - X-location, Y-location, and desired colour.
 PutPixel:
+	move.l	#FramebufferPutPixelTable, a0
+
+	; TODO
+
 	rts
 
 ; Send framebuffer to DMA queue. Framebuffer will be DMA copied RAM-to-VRAM $0C00 on next vblank.

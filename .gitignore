@@ -2,3 +2,4 @@ host_tools/reskit/target
 **/*.rs.bk
 **/Cargo.lock
 *.bin
+*.tbl
