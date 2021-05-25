@@ -89,7 +89,7 @@ PutPixel:
 
 	; a0 now contains exact addr of framebuffer byte to be modified
 	; if X is odd then use $F0 mask, otherwise use $0F mask
-	btst	#0, 4(sp)
+	btst.b	#0, 5(sp)
 	beq		PutPixel_PixelEven
 
 PutPixel_PixelOdd:
