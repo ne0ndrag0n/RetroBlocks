@@ -2,5 +2,6 @@
 H_DATA_TABLES_MOD = 1
 
 	include 'data/tables/pearson.asm'
+	include 'data/tables/fbdivide.asm'
 
 	endif
