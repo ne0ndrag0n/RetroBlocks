@@ -58,49 +58,74 @@ InitFramebuffer_X:
 	rts
 
 ; Plot pixel at the given location.
-; xx xx yy 0c - X-location, Y-location, and desired colour.
+; xx xx
+; 00 yy
+; 00 0c
 PutPixel:
-	move.l	#FramebufferPutPixelTable, a0
+	move.l	#FRAMEBUFFER, a0
 
-	; 1280 bytes per row
-	; 1280 = 1024 + 256
-	;        2^10   2^8
+	; Deriviation and simplification of required formula:
+	; cell_y = ( y / 8 )
+	; 1280 * cell_y = bytes before current row
+	; First we must do cell_y = floor( y / 8 ) to get an integer div value
+	; cell_y = y / 8, or y >> 3.
+	; Then it's just 1280 * cell_y
+	; Or, ( cell_y << 10 ) + ( cell_y << 8 )
 
-	; 1d_index = ( ( y << 10 ) + ( y << 8 ) ) + ( x << 2 )
-	move.l	#0, d0
-	move.b	6(sp), d0	; d0 = y
-	move.w	d0, d1		; Copy to d1
+	move.l	#0, d0			; Need a long to add to a0 eventually
+	move.w	6(sp), d0		; Load y to d0
+
+	lsr.w	#3, d0			; cell_y = y / 8, or y >> 3
+	move.w	d0, d1			; Copy cell_y to d1
 
 	lsl.w	#8, d0
-	lsl.w	#2, d0		; y << 10
+	lsl.w	#2, d0			; cell_y << 10
 
-	lsl.w	#8, d1		; y << 8
+	lsl.w	#8, d1			; cell_y << 8
 
-	add.w	d1, d0		; Add both
+	add.w	d1, d0			; (cell_y << 10) + (cell_y << 8)
 
+	; We now know which 8x8 row we're in using d0
+	; Now we must take x value, get cell_x = floor( x / 8 )
+	; For every x cell we move right, it's 32 bytes - 32 * cell_x or ( cell_x << 5 )
+	move.w	4(sp), d1		; Load x to d0
+	lsr.w	#3, d1			; cell_x = x / 8, or x >> 3
+	lsl.w	#5, d1			; cell_x * 32, or cell_x << 5. Can't just do left 2 here because remainder needs to be shorn
+
+	add.w	d1, d0			; Now add cell_x * 32 to previous result
+
+	; We have top left of 8x8 cell. Now get position in cell using remainders
+	; Just do the same exact shit here. Modulo value is n & (p - 1)
+	move.w	6(sp), d1		; Reload y
+	andi.w	#7, d1			; in_cell_y = y % 8, or y & 7
+	lsl.w	#2, d1			; in_cell_y * 4 bytes per row, or ( in_cell_y << 2 )
+
+	add.w	d1, d0			; Add in-cell rows to offset
+
+	; 4bpp format means two values are packed per byte in the x-direction
+	; in_cell_x = x % 8, x & 7
+	; Divide in_cell_x by 2 ( in_cell_x >> 1 )
 	move.w	4(sp), d1
-	lsl.w	#2, d1		; x << 2
+	andi.w	#7, d1
+	lsr.w	#1, d1
 
-	add.w	d1, d0		; Add again
-
-	add.l	d0, a0		; Increment FramebufferPutPixelTable ptr by index amount
-
-	move.b	(a0), d0	; Now load target byte of framebuffer
+	add.w	d1, d0
+	add.l	d0, a0			; Add the offset to framebuffer ptr
 
 	; a0 now contains exact addr of framebuffer byte to be modified
 	; if X is odd then use $F0 mask, otherwise use $0F mask
-	btst.b	#0, 5(sp)
+	btst.b	#0, 7(sp)
 	beq		PutPixel_PixelEven
 
 PutPixel_PixelOdd:
 	andi.b	#$F0, d0	; Erase lower nibble
-	or.b	4(sp), d0	; Overwrite lower nibble
+	or.b	9(sp), d0	; Overwrite lower nibble
 	move.b	d0, (a0)	; Write the byte back to framebuffer
 	bra		PutPixel_End
 
 PutPixel_PixelEven:
 	andi.b	#$0F, d0	; Erase upper nibble
-	move.b	7(sp), d1
+	move.b	9(sp), d1
 	lsl.b	#4, d1		; Shift color nibble to upper
 	or.b	d1, d0		; Overwrite upper nibble
 	move.b	d0, (a0)	; Write the byte back to framebuffer
