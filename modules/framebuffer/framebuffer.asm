@@ -66,7 +66,6 @@ PutPixel:
 	;       2^9   2^7
 
 	; 1d_index = ( ( y << 9 ) + ( y << 7 ) ) + ( x << 1 )
-	move.l	#0, d0
 	move.b	6(sp), d0	; d0 = y
 	move.w	d0, d1		; Copy to d1
 
