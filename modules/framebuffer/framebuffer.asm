@@ -97,7 +97,7 @@ PutPixel_PixelOdd:
 	andi.b	#$F0, d0	; Erase lower nibble
 	or.b	7(sp), d0	; Overwrite lower nibble
 	move.b	d0, (a1)	; Write the byte back to framebuffer
-	bra		PutPixel_End
+	rts
 
 PutPixel_PixelEven:
 	andi.b	#$0F, d0	; Erase upper nibble
@@ -105,10 +105,6 @@ PutPixel_PixelEven:
 	lsl.b	#4, d1		; Shift color nibble to upper
 	or.b	d1, d0		; Overwrite upper nibble
 	move.b	d0, (a1)	; Write the byte back to framebuffer
-
-PutPixel_End:
-	; It's up to you to pageflip separately using SwapFramebuffer method.
-	; Otherwise, pixel will not appear as it has not been sent to VDP.
 	rts
 
 ; Send framebuffer to DMA queue. Framebuffer will be DMA copied RAM-to-VRAM $0C00 on next vblank.
