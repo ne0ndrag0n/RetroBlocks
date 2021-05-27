@@ -83,10 +83,8 @@ PutPixel:
 	add.w	d1, d0		; Add again
 
 	move.l	#FramebufferPutPixelTable, a0
-	add.l	d0, a0		; Increment FramebufferPutPixelTable ptr by index amount
-
 	move.l	#$00FF0000, a1
-	move.w	(a0), a1	; Load address fragment from lookup table in a1
+	move.w	(a0, d0.w), a1	; Load address fragment from lookup table in a1
 
 	move.b	(a1), d0	; Now get byte out of framebuffer
 
