@@ -17,7 +17,10 @@ with open( sys.argv[ 1 ], "r" ) as file:
 if framebuffer_location == 0:
         sys.exit( "@framebuffer_location annotation not found or invalid in given file." )
 
-array = bytearray( 320 * 224 * 4 )
+# Shear off top bits so that the values are only stored as 16-bit
+framebuffer_location = framebuffer_location & 0x0000FFFF
+
+array = bytearray( 320 * 224 * 2 )
 for y in range( 0, 224 ):
      for x in range( 0, 320 ):
              x_cell = int( x / 8 )
@@ -41,12 +44,10 @@ for y in range( 0, 224 ):
              # Simple integer divide of x_in_cell by 2
              cell_addr += int( x_in_cell ) / 2
 
-             position = ( y * 1280 ) + ( x * 4 )
+             position = ( y * 640 ) + ( x * 2 )
              addr = int( framebuffer_location + cell_addr )
-             array[ position ]     = ( 0xFF000000 & addr ) >> 24
-             array[ position + 1 ] = ( 0x00FF0000 & addr ) >> 16
-             array[ position + 2 ] = ( 0x0000FF00 & addr ) >> 8
-             array[ position + 3 ] = 0x000000FF & addr
+             array[ position ] = ( 0x0000FF00 & addr ) >> 8
+             array[ position + 1 ] = 0x000000FF & addr
 
 with open( sys.argv[ 2 ], "wb" ) as file:
 	file.write( array )

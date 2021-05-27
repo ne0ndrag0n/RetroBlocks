@@ -60,42 +60,45 @@ InitFramebuffer_X:
 ; Plot pixel at the given location.
 ; xx xx yy 0c - X-location, Y-location, and desired colour.
 PutPixel:
-	move.l	#FramebufferPutPixelTable, a0
+	; 2 bytes per value
+	; 640 bytes per row
+	; 640 = 512 + 128
+	;       2^9   2^7
 
-	; 1280 bytes per row
-	; 1280 = 1024 + 256
-	;        2^10   2^8
-
-	; 1d_index = ( ( y << 10 ) + ( y << 8 ) ) + ( x << 2 )
+	; 1d_index = ( ( y << 9 ) + ( y << 7 ) ) + ( x << 1 )
 	move.l	#0, d0
 	move.b	6(sp), d0	; d0 = y
 	move.w	d0, d1		; Copy to d1
 
 	lsl.w	#8, d0
-	lsl.w	#2, d0		; y << 10
+	lsl.w	#1, d0		; y << 9
 
-	lsl.w	#8, d1		; y << 8
+	lsl.w	#7, d1		; y << 7
 
 	add.w	d1, d0		; Add both
 
 	move.w	4(sp), d1
-	lsl.w	#2, d1		; x << 2
+	lsl.w	#1, d1		; x << 1
 
 	add.w	d1, d0		; Add again
 
+	move.l	#FramebufferPutPixelTable, a0
 	add.l	d0, a0		; Increment FramebufferPutPixelTable ptr by index amount
 
-	move.b	(a0), d0	; Now load target byte of framebuffer
+	move.l	#$00FF0000, a1
+	move.w	(a0), a1	; Load address fragment from lookup table in a1
 
-	; a0 now contains exact addr of framebuffer byte to be modified
+	move.b	(a1), d0	; Now get byte out of framebuffer
+
+	; a1 now contains exact addr of framebuffer byte to be modified
 	; if X is odd then use $F0 mask, otherwise use $0F mask
 	btst.b	#0, 5(sp)
 	beq		PutPixel_PixelEven
 
 PutPixel_PixelOdd:
 	andi.b	#$F0, d0	; Erase lower nibble
-	or.b	4(sp), d0	; Overwrite lower nibble
-	move.b	d0, (a0)	; Write the byte back to framebuffer
+	or.b	7(sp), d0	; Overwrite lower nibble
+	move.b	d0, (a1)	; Write the byte back to framebuffer
 	bra		PutPixel_End
 
 PutPixel_PixelEven:
@@ -103,7 +106,7 @@ PutPixel_PixelEven:
 	move.b	7(sp), d1
 	lsl.b	#4, d1		; Shift color nibble to upper
 	or.b	d1, d0		; Overwrite upper nibble
-	move.b	d0, (a0)	; Write the byte back to framebuffer
+	move.b	d0, (a1)	; Write the byte back to framebuffer
 
 PutPixel_End:
 	; It's up to you to pageflip separately using SwapFramebuffer method.
