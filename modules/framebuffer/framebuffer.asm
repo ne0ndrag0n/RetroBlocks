@@ -99,7 +99,7 @@ PutPixel_PixelEven:
 
 ; Send framebuffer to DMA queue. Framebuffer will be DMA copied RAM-to-VRAM $0C00 on next vblank.
 SwapFramebuffer:
-	VdpDmaQueueEnqueue	#FRAMEBUFFER_SIZE, #FRAMEBUFFER, #FRAMEBUFFER_CONTROL_WORD
+	VdpDmaQueueEnqueue	#FRAMEBUFFER_SIZE_WORDS, #FRAMEBUFFER, #FRAMEBUFFER_CONTROL_WORD
 	rts
 
 	endif

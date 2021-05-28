@@ -13,10 +13,15 @@ RenderThread_ControllerInput:
 	beq.s 	RenderThread_ControllerInput
 
 RenderThread_VdpSwitch:
+	VdpErasePlane #VDP_TITLESCREEN_PLANE_A
+
 	jsr InitFramebuffer
 
 	; Plot a tiny little white pixel 0,0
-	FramebufferPutPixel #$0F000000
+	FramebufferPutPixel #$0F002525
+	FramebufferPutPixel #$0F002626
+	FramebufferPutPixel #$0F002727
+	FramebufferPutPixel #$0D002828
 	jsr SwapFramebuffer
 
 RenderThread_EternalLoop:
