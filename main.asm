@@ -11,7 +11,8 @@ BusError:
   rte
 
 AddressError:
-  rte
+  move.w  #$ADD7, d0
+  bra.s AddressError
 
 IllegalInstr:
   rte

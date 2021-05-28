@@ -24,4 +24,7 @@ PearsonHashLookupTable:
     dc.b	132, 156, 38, 47, 1, 7, 254, 24, 4, 216, 131, 89, 21, 28, 133, 37, 153
     dc.b	149, 80, 170, 68, 6, 169, 234, 151
 
+    ; demons dreeeeaming knowing i just needed to RE-ALIGN
+    dc.b 0
+
 	endif
