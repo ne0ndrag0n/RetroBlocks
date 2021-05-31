@@ -8,5 +8,6 @@ H_DATA_MOD = 1
   include 'data/instruments/mod.asm'
   include 'data/tables/mod.asm'
   include 'data/tracks/mod.asm'
+  include 'data/models/mod.asm'
 
   endif
