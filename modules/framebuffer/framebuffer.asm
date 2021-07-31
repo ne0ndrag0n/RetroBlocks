@@ -1,12 +1,6 @@
 	ifnd H_FRAMEBUFFER
 H_FRAMEBUFFER = 1
 
-	macro FramebufferPutPixel
-		move.l \1, -(sp)
-		jsr PutPixel
-		PopStack 4
-	endm
-
 ; Clear framebuffer - Mark FRAMEBUFFER_SIZE region 0
 ClearFramebuffer:
 	move.l  #FRAMEBUFFER, a0
@@ -61,40 +55,6 @@ InitFramebuffer_X:
 	move.l	(sp)+, d4
 	move.l	(sp)+, d3
 	move.l	(sp)+, d2
-	rts
-
-; Plot pixel at the given location.
-; 0c xx xx yy - Desired colour, X coordinate, y coordinate
-PutPixel:
-	move.l	4(sp), d0
-	andi.l	#$00FFFFFF, d0 		; Shear off the colour value
-	lsl.l	#1, d0				; Index * 2 - must be word index
-
-	move.l	#FramebufferPutPixelTable, a0
-
-	move.l	#$00FF0000, a1
-	move.w	(a0, d0), d1		; Lookup target lower RAM word into d1
-
-	move.b	(a1, d1.w), d0		; Load target byte out of framebuffer into d0
-
-	; (a1, d1.w) now contains exact addr of framebuffer byte to be modified
-	; if X is odd then use $F0 mask, otherwise use $0F mask
-	btst.b	#0, 6(sp)
-	beq		PutPixel_PixelEven
-
-PutPixel_PixelOdd:
-	andi.b	#$F0, d0		; Erase lower nibble
-	or.b	4(sp), d0		; Overwrite lower nibble
-	move.b	d0, (a1, d1.w)	; Write the byte back to framebuffer
-	rts
-
-PutPixel_PixelEven:
-	add.w	d1, a1		; We are going to need d1 here so free it up
-	andi.b	#$0F, d0	; Erase upper nibble
-	move.b	4(sp), d1
-	lsl.b	#4, d1		; Shift color nibble to upper
-	or.b	d1, d0		; Overwrite upper nibble
-	move.b	d0, (a1)	; Write the byte back to framebuffer
 	rts
 
 ; Send framebuffer to DMA queue. Framebuffer will be DMA copied RAM-to-VRAM $0C00 on next vblank.
