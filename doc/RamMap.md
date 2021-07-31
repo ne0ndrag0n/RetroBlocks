@@ -14,6 +14,7 @@ Memory Map
 | FF0017  | 1     | THREADER_BACK_PRIORITY_SETTING | Background Thread Priority<sup>1</sup>      |
 | FF0018  | 1     | THREADER_REMAINING_TICKS       | Remaining ticks of current thread           |
 | FF0019  | 1     | THREADER_NEXT_CONTEXT          | Next Thread Toggle Flag                     |
+| FF001A  | 6     | (none)                         | Reserved                                    |
 | FF0020  | 72    | THREADER_MAIN_CONTEXT          | Process Control Block, Main Thread          |
 | FF0068  | 72    | THREADER_BACK_CONTEXT          | Process Control Block, Background Thread    |
 | FF00B0  | 80    | VDP_DMAQUEUE_START             | DMA Queue                                   |
