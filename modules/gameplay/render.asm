@@ -17,13 +17,6 @@ RenderThread_VdpSwitch:
 
 	jsr InitFramebuffer
 
-	; Plot a tiny little white pixel 0,0
-	FramebufferPutPixel #$0F002525
-	FramebufferPutPixel #$0F002626
-	FramebufferPutPixel #$0F002727
-	FramebufferPutPixel #$0D002828
-	jsr SwapFramebuffer
-
 RenderThread_EternalLoop:
 	jmp RenderThread_EternalLoop
 
