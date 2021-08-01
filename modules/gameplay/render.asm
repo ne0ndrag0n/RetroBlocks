@@ -4,7 +4,7 @@ H_GAMEPLAY_RENDER = 1
 	include 'modules/framebuffer/framebuffer.asm'
 
 RenderThread:
-
+	HeapInit
 	jsr LoadTitlescreen
 
 RenderThread_ControllerInput:

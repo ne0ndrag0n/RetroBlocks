@@ -7,6 +7,7 @@
  include 'modules/z80/mod.asm'
  include 'modules/titlescreen/mod.asm'
  include 'modules/math/mod.asm'
+ include 'modules/memory/mod.asm'
  include 'modules/timer/mod.asm'
  include 'modules/sram/mod.asm'
  include 'modules/worldgen/mod.asm'

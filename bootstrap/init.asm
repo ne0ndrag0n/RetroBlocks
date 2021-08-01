@@ -4,8 +4,8 @@
  include 'modules/vdp/mod.asm'
 
 Start:
-	move.w	#$2700, sr			; Set baseline registers for SR
-	DisableInterrupts
+    move.w	#$2700, sr			; Set baseline registers for SR
+    DisableInterrupts
 
 SecurityCheck:
   move.b  (REG_HWVERSION), d0
@@ -13,12 +13,12 @@ SecurityCheck:
   beq.b   InitController         ; check HW version, if it's zero, skip the TMSS routine
   move.l  #'SEGA', (REG_TMS)     ; write SEGA to TMSS register to enable VDP
 
-	; Set stack pointer all the way to end of Genesis RAM
-	move.l #$00FFFFFC, a7
+    ; Set stack pointer all the way to end of Genesis RAM
+    move.l #$00FFFFFC, a7
 
-	RequestZ80Bus
-	ResetZ80
-	jsr WaitForZ80Bus
+    RequestZ80Bus
+    ResetZ80
+    jsr WaitForZ80Bus
 
 InitController:
   move.b #$40, (CTRL_1_CONTROL)
@@ -28,15 +28,15 @@ InitController:
   move.b #$40, (ACCESSORY_CONTROL)
   move.b #$40, (ACCESSORY_DATA)
 
-	ReturnZ80Bus
-	VdpSendCommandList #VdpTitlescreenState, #( (VdpTitlescreenState_End - VdpTitlescreenState)/2 ) - 1
+    ReturnZ80Bus
+    VdpSendCommandList #VdpTitlescreenState, #( (VdpTitlescreenState_End - VdpTitlescreenState)/2 ) - 1
 
 ClearCRAM:
-	move.l  #VDP_CRAM_WRITE,(VDP_CONTROL)
-	move.w  #$003f, d1
+    move.l  #VDP_CRAM_WRITE,(VDP_CONTROL)
+    move.w  #$003f, d1
 ClearCRAMLoop:
-	move.w  #$0000, (VDP_DATA)
-	dbf			d1, ClearCRAMLoop
+    move.w  #$0000, (VDP_DATA)
+    dbf			d1, ClearCRAMLoop
 
 ; Clear VRAM top to bottom
 ClearVramInit:
@@ -47,18 +47,15 @@ ClearVramInit_Loop:
   dbf     d1, ClearVramInit_Loop
 
 ClearRAM:
-	lea			RAM_START, a0
-	move.w	#(RAM_END - RAM_START), d1
+    lea			RAM_START, a0
+    move.w	#(RAM_END - RAM_START), d1
 ClearRAMLoop:
-	move.w	#$0000, (a0)+
-	dbf			d1, ClearRAMLoop
+    move.w	#$0000, (a0)+
+    dbf			d1, ClearRAMLoop
 
 InitEcho:
   lea     SndPointerList, a0
   bsr.w   Echo_Init
 
-	ifnd TESTSUITE
-	ThreaderInit
-	endif
-
-	EnableInterrupts
+    ThreaderInit
+    EnableInterrupts
