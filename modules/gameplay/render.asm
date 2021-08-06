@@ -16,6 +16,7 @@ RenderThread_VdpSwitch:
 	VdpErasePlane #VDP_TITLESCREEN_PLANE_A
 
 	jsr InitFramebuffer
+	jsr Test_FramebufferGenerateRamp
 
 RenderThread_EternalLoop:
 	jmp RenderThread_EternalLoop

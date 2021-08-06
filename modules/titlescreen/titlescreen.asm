@@ -1,7 +1,6 @@
   ifnd H_TITLESCREEN
 H_TITLESCREEN = 1
 
-  include 'modules/sram/sram.asm'
 
 LoadTitlescreen:
   VdpErasePlane #VDP_TITLESCREEN_PLANE_A

@@ -5,3 +5,7 @@ VGAPalette:
 Bread:
   dc.w $0000, $079c, $079d, $089d, $08ad, $08ad, $08be, $09be
   dc.w $09ce, $09ce, $09ce, $0acf, $0adf, $0adf, $0bef, $0bef
+
+ChromaRamp:
+  dc.w $0000, $0111, $0222, $0333, $0444, $0555, $0666, $0777
+  dc.w $0888, $0999, $0AAA, $0BBB, $0CCC, $0DDD, $0EEE, $0FFF

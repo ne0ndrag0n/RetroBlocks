@@ -7,7 +7,8 @@ Memory Map
 
 | Address | Bytes | Constant Symbol                | Meaning                                     |
 |---------|-------|--------------------------------|---------------------------------------------|
-| FF0000  | 16    | (none)                         | Reserved                                    |
+| FF0000  | 15    | (none)                         | Reserved                                    |
+| FF000F  | 1     | LOCK_STATUS                    | Semaphores for interrupt operations         |
 | FF0010  | 2     | JOYPAD_STATE_1                 | Joypad 1 State                              |
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
 | FF0016  | 1     | THREADER_MAIN_PRIORITY_SETTING | Main Thread Priority<sup>1</sup>            |

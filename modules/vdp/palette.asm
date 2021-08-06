@@ -29,6 +29,7 @@ H_STATIC_VDP_PALETTE = 1
     PopStack 8
   endm
 
+; **Deprecated** Use VdpDmaQueueEnqueue with CRAM destination
 ; 00 pp - Palette index (0-3) -> 00, 20, 40, 60
 ; aa aa aa aa - Source address of palette data
 LoadPaletteDma:
