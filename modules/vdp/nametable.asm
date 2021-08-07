@@ -99,7 +99,7 @@ BlitPattern_ForEachHH:
   lsr.w   #7, d1                      ; >> 14
   or.l    d1, d0                      ; VDP_VRAM_WRITE | ( ( address & $C000 ) >> 14 )
 
-  move.l  d0, (VDP_CONTROL)
+  VdpSendCommandLong  d0
 
   move.b  6(sp), d1                   ; d1 = ww
 
@@ -151,7 +151,7 @@ ErasePlane:
 
   VdpComputeDestinationAddress d0, d1
 
-  move.l  d0, (VDP_CONTROL)             ; Do the DMA
+  VdpSendCommandLong  d0                ; Do the DMA
   move.w  #0, (VDP_DATA)                ; VRAM fill of $0800 "0000" words to the specified plane
 
   VdpSetRegister 15, 2                  ; Put it back - Most static VDP operations assume word increment

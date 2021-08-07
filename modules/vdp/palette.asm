@@ -46,7 +46,7 @@ LoadPaletteDma:
   jsr ComputeVdpDestinationAddress
   PopStack 6
 
-  move.l  d0, (VDP_CONTROL)         ; Do the DMA
+  VdpSendCommandLong  d0            ; Do the DMA
 
   RestoreFramePointer
   rts
@@ -58,7 +58,7 @@ CopyPalette:
   move.w  4(sp), d0
   VdpGetControlWord d0, #VDP_CRAM_READ
 
-  move.l  d0, (VDP_CONTROL)
+  VdpSendCommandLong  d0
 
   move.w  #15, d1     ; d1 = counter for how many words to read
   move.l  6(sp), a0   ; a0 = destination array

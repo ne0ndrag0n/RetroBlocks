@@ -48,7 +48,7 @@ LoadPatternDma:
   jsr ComputeVdpDestinationAddress
   PopStack 6
 
-  move.l  d0, (VDP_CONTROL) ; Do the DMA (Damn Memory Access)!
+  VdpSendCommandLong  d0    ; Do the DMA (Damn Memory Access)!
 
   RestoreFramePointer
   rts
@@ -62,7 +62,7 @@ CopyVramTile:
   mulu.w  #32, d0           ; 32 bytes per tile
 
   VdpGetControlWord d0, #VDP_VRAM_READ
-  move.l  d0, VDP_CONTROL
+  VdpSendCommandLong d0
 
   move.w  #15, d1          ; Gonna be reading 16 words (32 bytes) out of VRAM
   move.l  6(sp), a0        ; Destination address goes in a0

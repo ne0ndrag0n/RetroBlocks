@@ -60,7 +60,7 @@ DmaQueueExecute:
 
 DmaQueueExecute_Loop:
 	tst.w	VDP_DMAQUEUE_QUEUED
-	beq.s	DmaQueueExecute_End		; If VDP_DMAQUEUE_QUEUED is 0, no more/nothing to do
+	beq.w	DmaQueueExecute_End		; If VDP_DMAQUEUE_QUEUED is 0, no more/nothing to do
 
 	subi.w	#1, VDP_DMAQUEUE_QUEUED
 
@@ -77,9 +77,9 @@ DmaQueueExecute_SendEntry:
 
 	VdpWriteDmaSourceAddress 2(a0)				; Write source address 2 blocks down
 
-	move.l	6(a0), VDP_CONTROL					; Send VDP control word, executing the DMA
+	VdpSendCommandLong 6(a0)					; Send VDP control word, executing the DMA
 	add.l	#VDP_DMAQUEUE_ENTRY_SIZE, a0		; Bump a0 to the next word
-	bra.s	DmaQueueExecute_Loop
+	bra.w	DmaQueueExecute_Loop
 
 DmaQueueExecute_End:
 	rts

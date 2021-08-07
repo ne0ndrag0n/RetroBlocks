@@ -39,11 +39,15 @@ H_STATIC_VDP_UTIL = 1
     addi.w  #\1, d1
     lsl.w   #8, d1
     or.b    \2, d1
+    TakeVdpControlLock
     move.w  d1, (VDP_CONTROL)
+    ReleaseVdpControlLock
   endm
 
   macro VdpSetRegister
+    TakeVdpControlLock
     move.w #( ( ( $80 + \1 ) << 8 ) | \2 ), (VDP_CONTROL)
+    ReleaseVdpControlLock
   endm
 
  macro VdpEnableDma
@@ -53,6 +57,18 @@ H_STATIC_VDP_UTIL = 1
  macro VdpDisableDma
     VdpSetRegister  1, VDP_DMA_DISABLED
  endm
+
+ macro VdpSendCommandWord
+    TakeVdpControlLock
+    move.w \1, (VDP_CONTROL)
+    ReleaseVdpControlLock
+ endm
+
+ macro VdpSendCommandLong
+    TakeVdpControlLock
+    move.l \1, (VDP_CONTROL)
+    ReleaseVdpControlLock
+  endm
 
   macro VdpClearVram
     move.w  \2, -(sp)
@@ -118,7 +134,7 @@ WriteVDPNametableLocation:
   bsr.s   ComputeVdpDestinationAddress
   PopStack 6
 
-  move.l  d0, (VDP_CONTROL)             ; Write VDP control word containing VRAM address
+  VdpSendCommandLong  d0                ; Write VDP control word containing VRAM address
   rts
 
 ; ** Deprecated ** use GetVdpControlWord
@@ -220,7 +236,7 @@ ReadVramWord:
   jsr ComputeVdpDestinationAddress
   PopStack 6
 
-  move.l  d0, (VDP_CONTROL)
+  VdpSendCommandLong  d0
 
   move.w  VDP_DATA, d0    ; Read from vdp
   rts
@@ -234,7 +250,7 @@ WriteVramWord:
   jsr ComputeVdpDestinationAddress
   PopStack 6
 
-  move.l  d0, (VDP_CONTROL)
+  VdpSendCommandLong  d0
 
   move.w  6(sp), (VDP_DATA)
   rts
@@ -249,7 +265,7 @@ ClearVram:
   jsr ComputeVdpDestinationAddress
   PopStack 6
 
-  move.l  d0, (VDP_CONTROL)
+  VdpSendCommandLong  d0
 
   move.w  4(sp), d0
 ClearVram_Loop:

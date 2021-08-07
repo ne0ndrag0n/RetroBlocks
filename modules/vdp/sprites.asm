@@ -85,7 +85,7 @@ NewSprite_Allocate:
 
   move.l  (sp)+, d1
 
-  move.l  d0, (VDP_CONTROL)   ; Set VDP to write to this address
+  VdpSendCommandLong  d0      ; Set VDP to write to this address
 
   move.w  6(sp), d0           ; Load yy yy
   addi.w  #$80, d0            ; All locations must be + 128

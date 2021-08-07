@@ -98,7 +98,7 @@ _VdpSendCommandList:
 	move.w	8(sp), d0		; d0 = number of commands
 	move.l	4(sp), a0		; a0 = origin address
 _VdpSendCommandList_NextCommand:
-	move.w	(a0)+, (VDP_CONTROL)					; Send command
+	VdpSendCommandWord	(a0)+					; Send command
 	dbf		d0, _VdpSendCommandList_NextCommand		; Decrement and branch if it's 0
 	rts
 
