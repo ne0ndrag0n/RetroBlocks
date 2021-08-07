@@ -50,14 +50,6 @@ H_STATIC_VDP_UTIL = 1
     ReleaseVdpControlLock
   endm
 
- macro VdpEnableDma
-    VdpSetRegister  1, VDP_DMA_ENABLED
- endm
-
- macro VdpDisableDma
-    VdpSetRegister  1, VDP_DMA_DISABLED
- endm
-
  macro VdpSendCommandWord
     TakeVdpControlLock
     move.w \1, (VDP_CONTROL)
