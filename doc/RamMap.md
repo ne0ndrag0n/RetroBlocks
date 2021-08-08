@@ -22,11 +22,6 @@ Memory Map
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
 | FFE000  | 8192  | (none)                         | Free/Unused             					 |
 
-# Notes
-<sup>1</sup> Priority settings in number of ticks, which will count down once per vblank. When zero, the threader will toggle the main and background thread.
-
-<sup>2</sup> Stacks begin from the bottom-up. THREAD_MAIN_STACK is defined as $FFFC, and THREAD_BACK_STACK is defined as 4096 bytes behind.
-
 # VRAM
 
 ## All Modes
