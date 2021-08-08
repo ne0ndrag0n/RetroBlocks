@@ -29,7 +29,6 @@ ExternalInterrupt:
 
   include 'modules/interrupts/vblank.asm'
 
-  include 'lib/echo.asm'
   include 'modules/mod.asm'
   include 'data/mod.asm'
   include 'constants/en_US.asm'
