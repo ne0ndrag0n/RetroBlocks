@@ -20,8 +20,7 @@ Memory Map
 | FF25C4  | 10812 | (none)                         | Free/Unused								 |
 | FF5000  | 1024  | HEAP                           | Dynamic Memory                              |
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
-| FFE000  | 4096  | THREAD_BACK_STACK<sup>2</sup>  | Background Thread Stack					 |
-| FFF000  | 4096  | THREAD_MAIN_STACK<sup>2</sup>  | Main Thread Stack							 |
+| FFE000  | 8192  | (none)                         | Free/Unused             					 |
 
 # Notes
 <sup>1</sup> Priority settings in number of ticks, which will count down once per vblank. When zero, the threader will toggle the main and background thread.
