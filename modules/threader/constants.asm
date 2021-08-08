@@ -4,8 +4,8 @@ H_THREADER_CONSTANTS = 1
 THREAD_MAIN = $00
 THREAD_BACK = $01
 
-THREAD_MAIN_TICKS = 42
-THREAD_BACK_TICKS = 21
+THREAD_MAIN_TICKS = 57
+THREAD_BACK_TICKS = 3
 
 ; Threader priority settings follow tick count in the FF0010 block
 ; Byte-size counts in ticks

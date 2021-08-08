@@ -1,6 +1,8 @@
 	ifnd H_VDP_STATES
 H_VDP_STATES = 1
 
+VDP_DEFAULT_VIDEO_MODE = VDP_MEGADRIVE | VDP_DMA_ENABLED | VDP_VBLANK_ENABLED | VDP_SCREEN_ENABLED
+
 VdpTitlescreenState:
 VDP_TITLESCREEN_PLANE_A=$C000
 VDP_TITLESCREEN_PLANE_B=$E000
@@ -39,10 +41,8 @@ VDP_TITLESCREEN_CELL_Y = $11
   endif
   endif
 
-VDP_TITLESCREEN_VIDEO_MODE = VDP_MEGADRIVE | VDP_DMA_ENABLED | VDP_VBLANK_ENABLED | VDP_SCREEN_ENABLED
-
   VdpDefineRegisterConstant 0, $04                                	; 04=00000100 -> 9-bit palette, everything else disabled
-  VdpDefineRegisterConstant 1, VDP_TITLESCREEN_VIDEO_MODE          	; 74=01110100 -> Genesis display mode, DMA & V-int enabled
+  VdpDefineRegisterConstant 1, VDP_DEFAULT_VIDEO_MODE          	    ; 74=01110100 -> Genesis display mode, DMA & V-int enabled
   VdpDefineRegisterConstant 2, ( VDP_TITLESCREEN_PLANE_A / $400 )   ; Plane A nametable
   VdpDefineRegisterConstant 3, ( VDP_TITLESCREEN_WINDOW / $400 )    ; Window nametable
   VdpDefineRegisterConstant 4, ( VDP_TITLESCREEN_PLANE_B / $2000 )  ; Plane B nametable

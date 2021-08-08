@@ -57,7 +57,7 @@ InitEcho:
   lea     SndPointerList, a0
   bsr.w   Echo_Init
 
-    move.b  #VDP_TITLESCREEN_VIDEO_MODE, VDP_VIDEO_MODE
+    move.b  #VDP_DEFAULT_VIDEO_MODE, VDP_VIDEO_MODE
 
     ThreaderInit
     EnableInterrupts

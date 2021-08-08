@@ -22,8 +22,8 @@ Memory Map
 | FF00B0  | 80    | VDP_DMAQUEUE_START             | DMA Queue                                   |
 | FF0100  | 7168  | HICOLOR_PALETTES               | HiColor palettes lines 0-223                |
 | FF1D00  | 2240  | HICOLOR_PALETTE_CELLS          | HiColor palette cell pointers 40x28         |
-| FF25C0  | 2     | HICOLOR_NEXT_LINE              | Next line to use for HiColor hblank         |
-| FF25C2  | 10814 | (none)                         | Free/Unused								 |
+| FF25C0  | 4     | HICOLOR_NEXT_LINE              | Address of next HiColor palette             |
+| FF25C4  | 10812 | (none)                         | Free/Unused								 |
 | FF5000  | 1024  | HEAP                           | Dynamic Memory                              |
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
 | FFE000  | 4096  | THREAD_BACK_STACK<sup>2</sup>  | Background Thread Stack					 |

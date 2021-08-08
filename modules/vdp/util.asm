@@ -50,6 +50,21 @@ H_STATIC_VDP_UTIL = 1
     ReleaseVdpControlLock
   endm
 
+  macro VdpUpdateVideoMode
+    VdpSetRegisterRuntime 1, \1
+    move.b  #\1, VDP_VIDEO_MODE
+  endm
+
+  macro VdpDisableScreen
+    andi.b  #(~VDP_SCREEN_ENABLED), VDP_VIDEO_MODE
+    VdpSetRegisterRuntime 1, VDP_VIDEO_MODE
+  endm
+
+  macro VdpEnableScreen
+    ori.b   #VDP_SCREEN_ENABLED, VDP_VIDEO_MODE
+    VdpSetRegisterRuntime 1, VDP_VIDEO_MODE
+  endm
+
  macro VdpSendCommandWord
     TakeVdpControlLock
     move.w \1, (VDP_CONTROL)
