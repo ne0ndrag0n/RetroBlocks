@@ -15,9 +15,12 @@ SecurityCheck:
     ; Set stack pointer all the way to end of Genesis RAM
     move.l #$00FFFFFC, a7
 
-    RequestZ80Bus
-    ResetZ80
-    jsr WaitForZ80Bus
+  RequestZ80Reset
+  RequestZ80Bus
+
+  ; TODO: Code to load into z80 goes here
+  ; Don't forget to release the reset (we don't do it here without a z80 application)
+  ; See https://plutiedev.com/using-the-z80
 
 InitController:
   move.b #$40, (CTRL_1_CONTROL)

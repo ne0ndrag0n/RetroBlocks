@@ -2,8 +2,7 @@
 H_JOYPAD_VBLANK = 1
 
 JoypadVBlank:
-  RequestZ80Bus
-  jsr WaitForZ80Bus
+  PauseZ80
 
   move.b  #0, (CTRL_1_DATA)     ; Set multiplexer in controller low to read start, A
   ControllerDelay

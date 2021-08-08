@@ -2,7 +2,7 @@
 H_Z80_BUSREQ = 1
 
 WaitForZ80Bus:
-  btst    #0, Z80_BUS_STATUS
+  cmpi.w  #$0100, (Z80_BUS_REQUEST)
   bne.s   WaitForZ80Bus
   rts
 
