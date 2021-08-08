@@ -12,13 +12,7 @@ Memory Map
 | FF000F  | 1     | LOCK_STATUS                    | Semaphores for interrupt operations         |
 | FF0010  | 2     | JOYPAD_STATE_1                 | Joypad 1 State                              |
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
-| FF0016  | 1     | THREADER_MAIN_PRIORITY_SETTING | Main Thread Priority<sup>1</sup>            |
-| FF0017  | 1     | THREADER_BACK_PRIORITY_SETTING | Background Thread Priority<sup>1</sup>      |
-| FF0018  | 1     | THREADER_REMAINING_TICKS       | Remaining ticks of current thread           |
-| FF0019  | 1     | THREADER_NEXT_CONTEXT          | Next Thread Toggle Flag                     |
-| FF001A  | 6     | (none)                         | Reserved                                    |
-| FF0020  | 72    | THREADER_MAIN_CONTEXT          | Process Control Block, Main Thread          |
-| FF0068  | 72    | THREADER_BACK_CONTEXT          | Process Control Block, Background Thread    |
+| FF0016  | 154   | (none)                         | Free/Unused                                 |
 | FF00B0  | 80    | VDP_DMAQUEUE_START             | DMA Queue                                   |
 | FF0100  | 7168  | HICOLOR_PALETTES               | HiColor palettes lines 0-223                |
 | FF1D00  | 2240  | HICOLOR_PALETTE_CELLS          | HiColor palette cell pointers 40x28         |

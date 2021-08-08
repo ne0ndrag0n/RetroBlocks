@@ -1,6 +1,5 @@
  include 'modules/z80/constants.asm'
  include 'modules/interrupts/constants.asm'
- include 'modules/threader/mod.asm'
  include 'modules/vdp/mod.asm'
 
 Start:
@@ -57,7 +56,6 @@ InitEcho:
   lea     SndPointerList, a0
   bsr.w   Echo_Init
 
-    move.b  #VDP_DEFAULT_VIDEO_MODE, VDP_VIDEO_MODE
+  move.b  #VDP_DEFAULT_VIDEO_MODE, VDP_VIDEO_MODE
 
-    ThreaderInit
     EnableInterrupts

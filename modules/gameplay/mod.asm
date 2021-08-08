@@ -2,6 +2,5 @@
 H_GAMEPLAY_MOD = 1
 
 	include 'modules/gameplay/render.asm'
-	include 'modules/gameplay/update.asm'
 
 	endif

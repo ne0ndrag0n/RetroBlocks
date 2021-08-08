@@ -21,12 +21,9 @@ TOTAL_TICKS = $FF0012
     PopStack 4
   endm
 
-; Every second, this value is incremented by 60 ($3C)
-UpdateTicks:
-  move.l  TOTAL_TICKS, d0
-  addi.l  #1, d0
-  move.l  d0, TOTAL_TICKS
-  rts
+  macro UpdateTicks
+    addi.l  #1, TOTAL_TICKS
+  endm
 
 ; tt tt tt tt - Amount to wait, in ticks
 ; Use vcounter to get higher-resolution timer wait (13,440 times per second/224 lines per vblank at 60 vblanks a second)

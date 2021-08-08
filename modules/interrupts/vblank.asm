@@ -2,21 +2,16 @@
 H_INTERRUPTS_VBLANK = 1
 
   include 'modules/helpers/context.asm'
+  include 'modules/timer/ticks.asm'
 
 VBlank:
-  jmp ThreaderSaveContext
+  QuickContextSave
 
-VBlank_Begin:
-  jmp ThreaderUpdate
-
-VBlank_Update:
-  jsr UpdateTicks
+  UpdateTicks
   jsr JoypadVBlank
   jsr DmaQueueExecute
 
-  jmp ThreaderLoadContext
-
-VBlank_End:
+  QuickContextRestore
   rte
 
 	endif
