@@ -13,9 +13,28 @@ InitHiColor:
 	rts
 
 ; Method linked in vectors.asm. The only use of hblank so far will be for the HiColor module.
-; Color swap for the next line has to happen QUICK! ~32 cycles. Do not waste time; disable the screen + interrupts, and send
-; 32 bytes unrolled. After that you can take more time to set up the next line's palette.
+; Color swap for the next line has to happen QUICK! See comments below.
 HBlank:
+	; BEFORE YOU EVER GET HERE:
+	; * VDP Registers 19 and 20 set to 16 and 0 respectively
+	; * VDP Registers 21, 22, and 23 set to the appropriate segment of HICOLOR_PALETTES
+
+	; Can't have this fucking shit up
+	DisableInterrupts
+
+	; Disable the screen by writing default video mode to register 01, minus screen enabled
+	move.w	#( $8100 | ( VDP_DEFAULT_VIDEO_MODE & ~VDP_SCREEN_ENABLED ) ), VDP_CONTROL
+
+	; Shoot off DMA to CRAM for this line.
+	move.l	#( VDP_CRAM_WRITE | VDP_DMA_ADDRESS ), VDP_CONTROL
+
+	; Tough stuff's over. Turn the screen back on.
+	move.w	#( $8100 | VDP_DEFAULT_VIDEO_MODE ), VDP_CONTROL
+
+	; TODO: CRAM already written. Now you can take some time to set up the next HBLANK.
+
+	; Restore interrupts and return
+	EnableInterrupts
 	rte
 
 	endif
