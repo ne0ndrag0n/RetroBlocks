@@ -25,6 +25,8 @@ H_VDP_DMAQUEUE = 1
 ; xx xx - DMA amount (bytes)
 ; aa aa aa aa - Source address
 ; aa aa aa aa - Destination VDP control word (VRAM/CRAM/VSRAM)
+; Returns: Pointer to the data in the DMA queue. DO NOT WRITE TO THIS! Use this to *test*
+; the DMA amount if you need to block the application for loading.
 DmaQueueEnqueue:
 	; Find nearest 00 00 DMA amount but do not exceed VDP_DMAQUEUE_END
 	move.l	#VDP_DMAQUEUE_ENTRIES, a0
@@ -42,13 +44,19 @@ DmaQueueEnqueue_Find:
 	bra.s	DmaQueueEnqueue_Find			; Otherwise, keep looking
 
 DmaQueueEnqueue_Found:
+	move.l	a0, a1							; Save this really quick to return it
+
 	move.w	4(sp), (a0)+
 	move.l	6(sp), (a0)+
 	move.l	10(sp), (a0)+					; Slot these items into the spot found in the DMA queue
 
 	addi.w	#1, VDP_DMAQUEUE_QUEUED			; Increment VDP_DMAQUEUE_QUEUED
 
+	move.l	a1, d0							; Returning the address found in the queue
+	rts
+
 DmaQueueEnqueue_End:
+	move.l	#0, d0
 	rts
 
 ; Send items in the DMA queue.
