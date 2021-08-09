@@ -2,6 +2,7 @@
 H_VDP_DMAQUEUE = 1
 
 	include 'modules/vdp/util.asm'
+	include 'modules/helpers/debug.asm'
 
 ; DMA queue format:
 ; xx xx - Amount of entries in the queue
@@ -80,12 +81,36 @@ DmaQueueExecute_ViewNext:
 	bra.s	DmaQueueExecute_ViewNext
 
 DmaQueueExecute_SendEntry:
-	VdpWriteDmaLength (a0)
+	move.w	#$9300, d0
+	move.b	1(a0), d0
+	move.w	d0, VDP_CONTROL			; Write the lower dma size byte
+
+	move.w	#$9400, d0
+	move.b	(a0), d0
+	move.w	d0, VDP_CONTROL			; Write the upper dma size byte
+
 	move.w	#0, (a0)				; Mark as tombstone available for reuse
 
-	VdpWriteDmaSourceAddress 2(a0)				; Write source address 2 blocks down
+	; TODO: Detect dma copy/dma fill and handle appropriately
+	; Does not currently work with dma copy/dma fill!
 
-	VdpSendCommandLong 6(a0)					; Send VDP control word, executing the DMA
+	move.l	2(a0), d0
+	lsr.l	#1, d0
+	move.l	d0, 2(a0)				; Format source address for registers (shift right 1)
+
+	move.w	#$9500, d0
+	move.b	5(a0), d0
+	move.w	d0, VDP_CONTROL			; Write low byte
+
+	move.w	#$9600, d0
+	move.b	4(a0), d0
+	move.w	d0, VDP_CONTROL			; Write middle byte
+
+	move.w	#$9700, d0
+	move.b	3(a0), d0
+	move.w	d0, VDP_CONTROL			; Write high byte
+
+	move.l	6(a0), VDP_CONTROL		; Send VDP control word, executing the DMA
 	add.l	#VDP_DMAQUEUE_ENTRY_SIZE, a0		; Bump a0 to the next word
 	bra.w	DmaQueueExecute_Loop
 
