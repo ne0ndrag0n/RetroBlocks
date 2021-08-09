@@ -10,6 +10,7 @@ VBlank:
   UpdateTicks
   jsr JoypadVBlank
   jsr DmaQueueExecute
+  jsr HiColorFrameSync
 
   QuickContextRestore
   rte

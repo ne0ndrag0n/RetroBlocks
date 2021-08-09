@@ -62,21 +62,4 @@ SwapFramebuffer:
 	VdpDmaQueueEnqueue	#FRAMEBUFFER_SIZE_WORDS, #FRAMEBUFFER, #FRAMEBUFFER_CONTROL_WORD
 	rts
 
-; Fill framebuffer with a chroma ramp and swap palette to chroma ramp
-; This will be used to test Hicolor mode
-Test_FramebufferGenerateRamp:
-	VdpLoadPaletteDma #VDP_PAL_0, #ChromaRamp
-
-	move.l	#FRAMEBUFFER, a0
-	move.w	#FRAMEBUFFER_SIZE, d0
-	lsr.w	#2, d0
-	subi.w	#1, d0
-
-Test_FramebufferGenerateRamp_Loop:
-	move.l	#$02468ACE, (a0)+
-	dbra	d0, Test_FramebufferGenerateRamp_Loop
-
-	bsr		SwapFramebuffer
-	rts
-
 	endif
