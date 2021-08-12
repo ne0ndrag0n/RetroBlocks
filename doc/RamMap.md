@@ -12,8 +12,8 @@ Memory Map
 | FF000F  | 1     | LOCK_STATUS                    | Semaphores for interrupt operations         |
 | FF0010  | 2     | JOYPAD_STATE_1                 | Joypad 1 State                              |
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
-| FF0016  | 154   | (none)                         | Free/Unused                                 |
-| FF00B0  | 80    | VDP_DMAQUEUE_START             | DMA Queue                                   |
+| FF0016  | 94    | (none)                         | Free/Unused                                 |
+| FF0074  | 140   | VDP_DMAQUEUE_START             | DMA Queue                                   |
 | FF0100  | 7168  | HICOLOR_PALETTES               | HiColor palettes lines 0-223                |
 | FF1D00  | 2240  | HICOLOR_PALETTE_CELLS          | HiColor palette cell pointers 40x28         |
 | FF25C0  | 4     | HICOLOR_NEXT_LINE              | Address of next HiColor palette             |
