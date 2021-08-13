@@ -55,6 +55,4 @@ ClearRAMLoop:
     move.w	#$0000, (a0)+
     dbf			d1, ClearRAMLoop
 
-  move.b  #VDP_DEFAULT_VIDEO_MODE, VDP_VIDEO_MODE
-
     EnableInterrupts

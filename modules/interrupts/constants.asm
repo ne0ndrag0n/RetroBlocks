@@ -1,7 +1,7 @@
  ifnd H_INTERRUPT_CONSTANTS
 H_INTERRUPT_CONSTANTS = 1
 
-LOCK_STATUS = $FF000F
+SYSTEM_STATUS = $FF000F
 LOCK_VDP_CONTROL = $01
 
   macro DisableInterrupts
@@ -13,11 +13,11 @@ LOCK_VDP_CONTROL = $01
   endm
 
   macro TakeVdpControlLock
-    ori.b #LOCK_VDP_CONTROL, LOCK_STATUS
+    ori.b #LOCK_VDP_CONTROL, SYSTEM_STATUS
   endm
 
   macro ReleaseVdpControlLock
-    andi.b #(~LOCK_VDP_CONTROL), LOCK_STATUS
+    andi.b #(~LOCK_VDP_CONTROL), SYSTEM_STATUS
   endm
 
  endif

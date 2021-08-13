@@ -21,7 +21,6 @@ RenderThread_VdpSwitch:
 	jsr Test_FramebufferGenerateRamp
 	jsr InitHiColor
 	jsr Test_FillHiColorPalettes
-	jsr StartHiColor
 
 RenderThread_EternalLoop:
 	jmp RenderThread_EternalLoop

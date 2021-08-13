@@ -79,7 +79,7 @@ DmaQueueEnqueue_End:
 
 ; Send items in the DMA queue.
 DmaQueueExecute:
-	btst	#0, LOCK_STATUS
+	btst	#0, SYSTEM_STATUS
 	bne.s	DmaQueueEnqueue_End		; VDP_CONTROL is locked. We'll need to execute DMA next vblank.
 
 	move.l	#VDP_DMAQUEUE_ENTRIES, a0

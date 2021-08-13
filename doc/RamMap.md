@@ -7,9 +7,8 @@ Memory Map
 
 | Address | Bytes | Constant Symbol                | Meaning                                     |
 |---------|-------|--------------------------------|---------------------------------------------|
-| FF0000  | 14    | (none)                         | Reserved                                    |
-| FF000E  | 1     | VDP_VIDEO_MODE                 | Current value of VDP Register #01           |
-| FF000F  | 1     | LOCK_STATUS                    | Semaphores for interrupt operations         |
+| FF0000  | 15    | (none)                         | Reserved                                    |
+| FF000F  | 1     | SYSTEM_STATUS                  | Options and semaphores (see below)          |
 | FF0010  | 2     | JOYPAD_STATE_1                 | Joypad 1 State                              |
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
 | FF0016  | 92    | (none)                         | Free/Unused                                 |
@@ -21,6 +20,15 @@ Memory Map
 | FF5000  | 1024  | HEAP                           | Dynamic Memory                              |
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
 | FFE000  | 8192  | (none)                         | Free/Unused             					 |
+
+## SYSTEM_STATUS flags
+|	7	|	6	|	5	|	4	|	3	|	2	|		1	   |		0	      |
+|-------|-------|-------|-------|-------|-------|--------------|------------------|
+| None  | None  | None  | None  | None  | None  | HiColor Sync | VDP_CONTROL Lock |
+
+Bit 0: VDP_CONTROL lock. When set, vblank will not write to VDP_CONTROL.
+
+Bit 1: HiColor Sync. When set, HiColor mode is enabled and will set up for next frame in vblank.
 
 # VRAM
 
