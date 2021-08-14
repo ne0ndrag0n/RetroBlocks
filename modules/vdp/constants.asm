@@ -38,8 +38,8 @@ VDP_PAL_2=$40
 VDP_PAL_3=$60
 
 ; Use these flags for register 0 state definitions
-VDP_REG01_DEFAULTS = $04
-VDP_HBLANK_ENABLED = $14
+VDP_REG00_DEFAULTS = $04
+VDP_HBLANK_ENABLED = $16
 
 ; Use these flags for register 1 state definitions
 VDP_MASTER_SYSTEM = $00

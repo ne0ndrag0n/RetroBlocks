@@ -41,7 +41,7 @@ VDP_TITLESCREEN_CELL_Y = $11
   endif
   endif
 
-  VdpDefineRegisterConstant 0, VDP_REG01_DEFAULTS                  	; 04=00000100 -> 9-bit palette, everything else disabled
+  VdpDefineRegisterConstant 0, VDP_REG00_DEFAULTS                  	; 04=00000100 -> 9-bit palette, everything else disabled
   VdpDefineRegisterConstant 1, VDP_DEFAULT_VIDEO_MODE          	    ; 74=01110100 -> Genesis display mode, DMA & V-int enabled
   VdpDefineRegisterConstant 2, ( VDP_TITLESCREEN_PLANE_A / $400 )   ; Plane A nametable
   VdpDefineRegisterConstant 3, ( VDP_TITLESCREEN_WINDOW / $400 )    ; Window nametable
