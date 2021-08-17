@@ -59,17 +59,11 @@ HiColorFrameSync:
 
 HiColorFrameSync_RegisterSetup:
 	; When we call this, we're still in vblank, probably right there near the end. We will need to send the HiColor state for the first horizontal line.
-	move.l	#$94009310, VDP_CONTROL
 	move.l	#( $97009600 | ( ( HICOLOR_PALETTES >> 1 ) & $00FF0000 ) | ( ( ( HICOLOR_PALETTES >> 1 ) & $0000FF00 ) >> 8 ) ), VDP_CONTROL
 	move.w	#( $9500 | ( ( HICOLOR_PALETTES >> 1 ) & $000000FF ) ), VDP_CONTROL
 
-	; DMA to PAL0 before first line is drawn
-	; No need to disable the screen here! When line 0 is drawn it will work properly
-	move.l	#( VDP_CRAM_WRITE | VDP_DMA_ADDRESS ), VDP_CONTROL
-
-	; After this operation the DMA source regs should autoincrement 16 words, but the counter will run out.
-	; So set the counter up for the next line. TODO: We *might* be able to get away with just the lower word?
-	move.l	#$94009310, VDP_CONTROL
+	; Write 00 for upper DMA size byte
+	move.w	#$9400, VDP_CONTROL
 
 	btst	#2, SYSTEM_STATUS
 	beq.s	HiColorFrameSync_End								; Determine if hblank needs to be enabled
@@ -88,12 +82,18 @@ HiColorFrameSync_End:
 ; Method linked in vectors.asm. The only use of hblank so far will be for the HiColor module.
 ; Color swap for the next line has to happen QUICK! See comments below.
 HBlank:
-	; BEFORE YOU EVER GET HERE:
-	; * VDP Registers 19 and 20 set to 16 and 0 respectively
-	; * VDP Registers 21, 22, and 23 set to the appropriate segment of HICOLOR_PALETTES
 
-	; Can't have this fucking shit up
-	DisableInterrupts
+	rept 5
+		nop							; Wait for existing HBlank flag to clear - already missed this line.
+	endr
+
+HBlank_SyncNextLine
+	btst  #2, VDP_CONTROL + 1
+	beq.s HBlank_SyncNextLine		; Wait for lower byte of VDP status to have next HBlank flag set
+
+	; Length must be reset to 16 words for the next hblank
+	; If you touch this anywhere else in the code, you die
+	move.w	#$9310, VDP_CONTROL
 
 	; Disable the screen by writing default video mode to register 01, minus screen enabled
 	move.w	#( $8100 | ( VDP_DEFAULT_VIDEO_MODE & ~VDP_SCREEN_ENABLED ) ), VDP_CONTROL
@@ -104,13 +104,6 @@ HBlank:
 	; Tough stuff's over. Turn the screen back on.
 	move.w	#( $8100 | VDP_DEFAULT_VIDEO_MODE ), VDP_CONTROL
 
-	; Length must be reset to 16 words for the next hblank
-	; If you touch this anywhere else in the code, you die
-	move.l	#$94009310, VDP_CONTROL
-
-HBlank_End:
-	; Restore interrupts and return
-	EnableInterrupts
 	rte
 
 	endif
