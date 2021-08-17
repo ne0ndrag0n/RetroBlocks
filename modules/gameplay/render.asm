@@ -16,11 +16,7 @@ RenderThread_VdpSwitch:
 	VdpErasePlane #VDP_TITLESCREEN_PLANE_A
 
 	jsr InitFramebuffer
-
-	; Here we do some things to test HiColor
 	jsr Test_FramebufferGenerateRamp
-	jsr InitHiColor
-	jsr Test_FillHiColorPalettes
 
 RenderThread_EternalLoop:
 	jmp RenderThread_EternalLoop
@@ -40,28 +36,6 @@ Test_FramebufferGenerateRamp_Loop:
 	dbra	d0, Test_FramebufferGenerateRamp_Loop
 
 	jsr		SwapFramebuffer
-	rts
-
-; Generate example HiColor palette range for lines 0-111 and 213-223
-; Load HiColor palettes for lines 112-212 for shits and giggles
-Test_FillHiColorPalettes:
-	move.l	d2, -(sp)
-
-	move.w	#223, d2			; This will end up filling it from 223 to 0
-Test_FillHiColorPalettes_Loop:
-	GetHiColorPaletteAddress d2
-	MemCopy #ChromaRamp, d0, #32
-	dbra	d2, Test_FillHiColorPalettes_Loop
-
-	move.w	#112, d2
-Test_FillHiColorPalettes_RedLoop:
-	GetHiColorPaletteAddress d2
-	MemCopy	#ChromaRampRed, d0, #32
-	addi.w	#1, d2
-	cmpi.w	#213, d2
-	blo.s	Test_FillHiColorPalettes_RedLoop
-
-	move.l	(sp)+, d2
 	rts
 
 	endif
