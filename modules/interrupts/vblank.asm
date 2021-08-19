@@ -6,9 +6,12 @@ H_INTERRUPTS_VBLANK = 1
 
 VBlank:
   QuickContextSave
+
   UpdateTicks
   jsr JoypadVBlank
   jsr DmaQueueExecute
+  jsr HiColorFrameSync
+
   QuickContextRestore
   rte
 

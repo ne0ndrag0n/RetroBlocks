@@ -13,7 +13,9 @@ Memory Map
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
 | FF0016  | 92    | (none)                         | Free/Unused                                 |
 | FF0072  | 142   | VDP_DMAQUEUE_START             | DMA Queue                                   |
-| FF0100  | 20224 | (none)                         | Free/Unused								 |
+| FF0100  | 7168  | HICOLOR_PALETTES               | HiColor palettes lines 0-223                |
+| FF1D00  | 2240  | HICOLOR_PALETTE_CELLS          | HiColor palette cell pointers 40x28         |
+| FF25C0  | 10816 | (none)                         | Free/Unused								 |
 | FF5000  | 1024  | HEAP                           | Dynamic Memory                              |
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
 | FFE000  | 8192  | (none)                         | Free/Unused             					 |
@@ -21,9 +23,11 @@ Memory Map
 ## SYSTEM_STATUS flags
 |	7	|	6	|	5	|	4	|	3	|		2	  	 |		1	    |		0	       |
 |-------|-------|-------|-------|-------|----------------|--------------|------------------|
-| None  | None  | None  | None  | None  | None           | None         | VDP_CONTROL Lock |
+| None  | None  | None  | None  | None  | HBlank Enable  | HiColor Sync | VDP_CONTROL Lock |
 
 Bit 0: VDP_CONTROL lock. When set, vblank will not write to VDP_CONTROL.
+Bit 1: HiColor Sync. When set, HiColor mode is enabled and will set up for next frame in vblank.
+Bit 2: Hblank enable. Hblank will be enabled after the end of the next vblank.
 
 # VRAM
 

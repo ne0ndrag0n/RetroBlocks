@@ -27,9 +27,6 @@ UserError:
 ExternalInterrupt:
   rte
 
-HBlank:
-  rte
-
   include 'modules/interrupts/vblank.asm'
 
   include 'modules/mod.asm'
