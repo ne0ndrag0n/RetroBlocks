@@ -1,8 +1,8 @@
     ifnd H_MEMORY_HEAP
 H_MEMORY_HEAP = 1
 
-HEAP = $FF5000
-HEAP_SIZE = 1024
+HEAP = $FFE000
+HEAP_SIZE = 7168
 
     macro HeapAllocate
         move.w  \1, -(sp)

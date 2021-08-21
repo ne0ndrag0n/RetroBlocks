@@ -11,12 +11,11 @@ Memory Map
 | FF000F  | 1     | SYSTEM_STATUS                  | Options and semaphores (see below)          |
 | FF0010  | 2     | JOYPAD_STATE_1                 | Joypad 1 State                              |
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
-| FF0016  | 92    | (none)                         | Free/Unused                                 |
-| FF0072  | 142   | VDP_DMAQUEUE_START             | DMA Queue                                   |
-| FF0100  | 20224 | (none)                         | Free/Unused								 |
-| FF5000  | 1024  | HEAP                           | Dynamic Memory                              |
+| FF0016  | 142   | VDP_DMAQUEUE_START             | DMA Queue                                   |
+| FF00A4  | 21340 | (none)                         | Free/Unused								 |
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
-| FFE000  | 8192  | (none)                         | Free/Unused             					 |
+| FFE000  | 7168  | HEAP                           | Dynamic Memory            					 |
+| FFFC00  | 1024  | STACK						   | Reserved for stack space                    |
 
 ## SYSTEM_STATUS flags
 |	7	|	6	|	5	|	4	|	3	|		2	  	 |		1	    |		0	       |

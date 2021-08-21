@@ -4,6 +4,12 @@ H_VDP_DMAQUEUE = 1
 	include 'modules/vdp/util.asm'
 	include 'modules/helpers/debug.asm'
 
+VDP_DMAQUEUE_START = $FF0016
+VDP_DMAQUEUE_END   = $FF00A3
+VDP_DMAQUEUE_QUEUED = VDP_DMAQUEUE_START
+VDP_DMAQUEUE_ENTRIES = VDP_DMAQUEUE_QUEUED + 2
+VDP_DMAQUEUE_ENTRY_SIZE = 14
+
 ; DMA queue format:
 ; xx xx - Amount of entries in the queue
 ; qq qq qq ... - Queued entries in the format below
