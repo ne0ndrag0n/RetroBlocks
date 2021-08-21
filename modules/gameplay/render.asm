@@ -3,23 +3,23 @@ H_GAMEPLAY_RENDER = 1
 
 	include 'modules/framebuffer/mod.asm'
 
-RenderThread:
+Render:
 	HeapInit
 	jsr LoadTitlescreen
 
-RenderThread_ControllerInput:
+Render_ControllerInput:
 	move.b	(JOYPAD_STATE_1), d0
 	andi.b	#JOYPAD_START, d0
-	beq.s 	RenderThread_ControllerInput
+	beq.s 	Render_ControllerInput
 
-RenderThread_VdpSwitch:
+Render_VdpSwitch:
 	VdpErasePlane #VDP_TITLESCREEN_PLANE_A
 
 	jsr InitFramebuffer
 	jsr Test_FramebufferGenerateRamp
 
-RenderThread_EternalLoop:
-	jmp RenderThread_EternalLoop
+Render_EternalLoop:
+	jmp Render_EternalLoop
 
 ; Fill framebuffer with a chroma ramp and swap palette to chroma ramp
 ; This will be used to test Hicolor mode

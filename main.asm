@@ -5,7 +5,7 @@
   include 'bootstrap/headers.asm'
   include 'bootstrap/init.asm'
 
-  jmp RenderThread
+  jmp MainLoop
 
 BusError:
   rte
