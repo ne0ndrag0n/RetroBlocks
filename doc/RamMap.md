@@ -7,12 +7,15 @@ Memory Map
 
 | Address | Bytes | Constant Symbol                | Meaning                                     |
 |---------|-------|--------------------------------|---------------------------------------------|
-| FF0000  | 15    | (none)                         | Reserved                                    |
+| FF0000  | 14    | (none)                         | Reserved                                    |
+| FF000E  | 1     | HICOLOR_REMAINING_COLORS       | Counter used to render Hicolor regions      |
 | FF000F  | 1     | SYSTEM_STATUS                  | Options and semaphores (see below)          |
 | FF0010  | 2     | JOYPAD_STATE_1                 | Joypad 1 State                              |
 | FF0012  | 4     | TOTAL_TICKS                    | Game Ticks                                  |
 | FF0016  | 142   | VDP_DMAQUEUE_START             | DMA Queue                                   |
-| FF00A4  | 21340 | (none)                         | Free/Unused								 |
+| FF00A4  | 4     | HICOLOR_NEXT_HBLANK_WORD       | Control word sent every HBlank for Hicolor  |
+| FF00A8  | 896   | HICOLOR_PALETTES               | Palette pairs for each Hicolor region       |
+| FF0428  | 20440 | (none)                         | Free/Unused								 |
 | FF5400  | 35840 | FRAMEBUFFER                    | 320x224 4bpp Framebuffer                    |
 | FFE000  | 7168  | HEAP                           | Dynamic Memory            					 |
 | FFFC00  | 1024  | STACK						   | Reserved for stack space                    |
