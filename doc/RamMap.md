@@ -21,11 +21,12 @@ Memory Map
 | FFFC00  | 1024  | STACK						   | Reserved for stack space                    |
 
 ## SYSTEM_STATUS flags
-|	7	|	6	|	5	|	4	|	3	|		2	  	 |		1	    |		0	       |
-|-------|-------|-------|-------|-------|----------------|--------------|------------------|
-| None  | None  | None  | None  | None  | None           | None         | VDP_CONTROL Lock |
+|	7	|	6	|	5	|	4	|	3	|		2	  	 |		 1        |		  0          |
+|-------|-------|-------|-------|-------|----------------|----------------|------------------|
+| None  | None  | None  | None  | None  | None           | Hicolor Enable | VDP_CONTROL Lock |
 
 Bit 0: VDP_CONTROL lock. When set, vblank will not write to VDP_CONTROL.
+Bit 1: Enables Hicolor.
 
 # VRAM
 
