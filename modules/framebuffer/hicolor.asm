@@ -53,6 +53,7 @@ SetupHicolorTestValues:
 	move.l	a2, -(sp)
 	move.l 	d2, -(sp)
 	move.l	d3, -(sp)
+	move.l	d4, -(sp)
 
 	move.l	#HICOLOR_PALETTES, a2
 	move.w	#27, d2					; There are 28 palettes to copy
@@ -74,6 +75,9 @@ SetupHicolorTestValues_WriteChromaRamps:
 	; Write nametables to set PAL2 every $100 bytes
 	move.l	#$0000E100, d2
 
+SetupHicolorTestValues_WriteOddRow:
+	move.w	#127, d4
+
 SetupHicolorTestValues_WritePal2:
 	VdpGetControlWord d2, #VDP_VRAM_READ
 	DisableInterrupts
@@ -90,11 +94,14 @@ SetupHicolorTestValues_WritePal2:
 	move.w	d3, VDP_DATA
 	EnableInterrupts
 
+	addi.w	#2, d2
+	dbra	d4, SetupHicolorTestValues_WritePal2
+
 	addi.w	#$0100, d2
-
 	cmpi.w	#$EF00, d2
-	bls.s	SetupHicolorTestValues_WritePal2
+	bls.s	SetupHicolorTestValues_WriteOddRow
 
+	move.l	(sp)+, d4
 	move.l 	(sp)+, d3
 	move.l	(sp)+, d2
 	move.l	(sp)+, a2
