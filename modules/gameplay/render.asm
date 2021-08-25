@@ -17,9 +17,9 @@ Render_VdpSwitch:
 
 	jsr InitFramebuffer
 	jsr Test_FramebufferGenerateRamp
-	;jsr InitHicolor
-	;jsr SetupHicolorTestValues
-	;jsr StartHicolor
+	jsr InitHicolor
+	jsr SetupHicolorTestValues
+	jsr StartHicolor
 
 Render_EternalLoop:
 	bra.s Render_EternalLoop

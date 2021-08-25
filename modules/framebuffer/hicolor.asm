@@ -7,7 +7,7 @@ HICOLOR_PALETTES         = $FF00A8
 
 HICOLOR_ENABLED          = $02
 HICOLOR_SECOND_PAL_PAIR  = $80
-HICOLOR_DUMMY_WRITE      = $94009400
+HICOLOR_FIFO_STALL       = ( ( $BA80 & $3FFF ) << 16 ) | ( ( $BA80 & $C000 ) >> 14 ) | VDP_VRAM_WRITE
 
 HICOLOR_PALETTES_SIZE    = 896
 
@@ -37,7 +37,6 @@ HICOLOR_PALETTES_SIZE    = 896
 ; * Blank all HICOLOR_PALETTES.
 InitHicolor:
 	move.b	#16, HICOLOR_REMAINING_COLORS
-	move.l	#HICOLOR_DUMMY_WRITE, HICOLOR_NEXT_HBLANK_WORD
 
 	move.w	#( ( HICOLOR_PALETTES_SIZE / 4 ) - 1 ), d0		; (896/4) - 1 = 223
 	move.l	#HICOLOR_PALETTES, a0
@@ -123,7 +122,7 @@ StopHicolor:
 ; Detect if Hicolor is enabled, and if so, set up the next frame and enable hblank. This item needs to be at the end of vblank.
 HicolorOnNextFrame:
 	btst	#1, SYSTEM_STATUS
-	beq.s	HicolorOnNextFrame_End		; Do nothing if zero
+	beq		HicolorOnNextFrame_End		; Do nothing if zero
 
 	; Disable hblank while we're in here.
 	move.w	#( $8000 | VDP_REG00_DEFAULTS ), VDP_CONTROL
@@ -136,25 +135,14 @@ HicolorOnNextFrame:
 	move.l	#$94009320, VDP_CONTROL
 	move.l	#( VDP_CRAM_WRITE | VDP_DMA_ADDRESS ), VDP_CONTROL
 
-	; Autoincrement will bring the source counter up properly at this point.
-	; Reset the vdp counter for the first two colours of the first PAL2/PAL3 palette pair.
-	move.w	#$9302, VDP_CONTROL
-
 	; Stage HICOLOR_NEXT_HBLANK_WORD to CRAM Write, DMA, $0044 for first hblank.
-	move.l	#( VDP_CRAM_WRITE | VDP_DMA_ADDRESS | ( $0044 << 16 ) ), HICOLOR_NEXT_HBLANK_WORD
+	move.l	#( VDP_CRAM_WRITE | VDP_DMA_ADDRESS | ( $0040 << 16 ) ), HICOLOR_NEXT_HBLANK_WORD
 
-	; Burn remaining time in vblank and sync to line 0
-	; If we're already late, there's too much going on in vblank...
-HicolorOnNextFrame_SyncLine0:
-	btst	#3, VDP_CONTROL + 1
-	bne.s	HicolorOnNextFrame_SyncLine0
-
-	; Send the first two colours of the first PAL2/PAL3 palette pair.
-	move.l	#( VDP_CRAM_WRITE | VDP_DMA_ADDRESS | ( $0040 << 16 ) ), VDP_CONTROL
+	; Reset counter for first hblank
+	move.w	#$9302, VDP_CONTROL
 
 	; Start hblank. Warning: unfrezes the hvcounter if you had it frozen.
 	move.w	#( $8000 | VDP_REG00_DEFAULTS | VDP_HBLANK_ENABLED ), VDP_CONTROL
-	move.w	#$9302, VDP_CONTROL
 
 HicolorOnNextFrame_End:
 	rts
@@ -163,12 +151,18 @@ HicolorOnNextFrame_End:
 ; Every hblank you get two slots to send two colours. This will continuously send the colours, in
 ; preparation for the subsequent 16-line Palette Pair Regions.
 HBlank:
-	; Sending a color has to happen NOW!
-	move.l	#$94009400, VDP_CONTROL
-	move.l	#$94009400, VDP_CONTROL
+
+	rept 25
+	nop
+	endr
+
+	move.l	#HICOLOR_FIFO_STALL, VDP_CONTROL
+	move.l	#0, VDP_DATA
+	move.l	#0, VDP_DATA
+	move.l	#0, VDP_DATA				; Stuff VDP FIFO to sync CPU with VDP
 
 	move.l	HICOLOR_NEXT_HBLANK_WORD, VDP_CONTROL
-	move.w	#$9302, VDP_CONTROL
+	move.w	#$9302, VDP_CONTROL					; Send next hblank word, then reset the DMA counter.
 
 	; After that we do everything necessary for the next hblank.
 	cmpi.w	#$C07C, HICOLOR_NEXT_HBLANK_WORD	; Did we just write the last colour of PAL3 (CRAM write, $7C)?

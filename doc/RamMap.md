@@ -61,7 +61,8 @@ Bit 1: Enables Hicolor.
 | 9800    | 8176  | UI Patterns/Art        |
 | B7F0    | 16    | Sprite Metadata        |
 | B800    | 640   | Sprite Attribute Table |
-| BA80    | 384   | Free/Unused            |
+| BA80    | 10    | Hicolor<sup>2</sup>    |
+| BA8A    | 374   | Free/Unused            |
 | BC00    | 1024  | HScroll Table          |
 | C000    | 4096  | Plane A Nametable      |
 | D000    | 4096  | Window Nametable       |
@@ -70,3 +71,4 @@ Bit 1: Enables Hicolor.
 
 
 <sup>1</sup> Tiles in VRAM are indexed in 32-byte segments. The font runs from $00 to $5F using this system.
+<sup>2</sup> Five words are written here to stuff the VDP FIFO queue, which is essential to Hicolor mode.
