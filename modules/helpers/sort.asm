@@ -105,7 +105,7 @@ Quicksort:
 	move.l	d3, -(sp)		; Save existing regs
 
 	move.l	#0, d2			; i = 0
-	move.l	6(sp), d3
+	move.l	4(sp), d3
 	subi.w	#1, d3			; j = size - 1
 
 Quicksort_For:
@@ -153,7 +153,7 @@ Quicksort_Recurse:
 	move.l	d2, -(sp)
 	move.l	d3, -(sp)
 		add.l	d2, a0				; array + i
-		move.l	4(sp), d3			; stomp d3 for len - i
+		move.l	4(sp), d3			; stomp d3 for size - i
 		sub.l	d2, d3				; d3 will get put back anyway...
 		move.l	a0, -(sp)
 		move.l	d3, -(sp)
