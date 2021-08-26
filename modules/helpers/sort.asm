@@ -9,6 +9,14 @@ H_HELPERS_SORT = 1
 		PopStack 6
 	endm
 
+	macro Sort
+		move.l	\1, -(sp)
+		move.l	#0, -(sp)
+		move.w	\2,	2(sp)
+		jsr Quicksort
+		PopStack 8
+	endm
+
 ; Sort using cocktail shaker method. This is not recommended for
 ; large list sizes.
 ; aa aa aa aa - Address of list
@@ -77,6 +85,88 @@ CocktailShaker_CheckSwapped:
 	; Once we get here, it's all done
 
 	PopStack 2
+	rts
+
+; Ref: https://rosettacode.org/wiki/Sorting_algorithms/Quicksort#C
+; 00 00 ss ss - Array size
+; aa aa aa aa - Array address (bytes)
+Quicksort:
+	cmpi.w	#2, 6(sp)
+	blo		Quicksort_End
+
+	move.l	8(sp), a0		; a0 = array
+
+	move.l	a0, a1
+	move.l	4(sp), d0
+	lsr.w	#1, d0
+	add.l	d0, a1			; a1 is pivot = array[ size / 2 ]
+
+	move.l	d2, -(sp)
+	move.l	d3, -(sp)		; Save existing regs
+
+	move.l	#0, d2			; i = 0
+	move.l	6(sp), d3
+	subi.w	#1, d3			; j = size - 1
+
+Quicksort_For:
+Quicksort_WhileI:
+	move.b	(a0, d2), d0
+	cmp.b	(a1), d0
+	bhs		Quicksort_WhileJ	; while array[ i ] < pivot, i++
+	addi.w	#1, d2
+	bra		Quicksort_WhileI
+
+Quicksort_WhileJ:
+	move.b	(a0, d3), d0
+	cmp.b	(a1), d0
+	bls		Quicksort_BreakCheck ; while array[ j ] > pivot, j--
+	subi.w	#1, d3
+	bra		Quicksort_WhileJ
+
+Quicksort_BreakCheck:
+	cmp.w	d3, d2
+	bhs		Quicksort_Recurse	; if i >= j then break
+
+	move.b	d4, -(sp)
+	move.b	(a0, d2), d4		; temp = array[ i ]
+	move.b	(a0, d3), (a0, d2)	; array[ i ] = array[ j ]
+	move.b	d4, (a0, d3)		; array[ j ] = temp
+	move.b	(sp)+, d4
+
+	addi.w	#1, d2
+	subi.w	#1, d3
+	bra		Quicksort_For
+
+Quicksort_Recurse:
+	move.l	a0, -(sp)
+	move.l	d2, -(sp)
+	move.l	d3, -(sp)
+		move.l	a0, -(sp)
+		move.l	d2, -(sp)
+		jsr Quicksort				; recursive call using arguments array, i
+		PopStack 8
+	move.l	(sp)+, d3
+	move.l	(sp)+, d2
+	move.l	(sp)+, a0
+
+	move.l	a0, -(sp)
+	move.l	d2, -(sp)
+	move.l	d3, -(sp)
+		add.l	d2, a0				; array + i
+		move.l	4(sp), d3			; stomp d3 for len - i
+		sub.l	d2, d3				; d3 will get put back anyway...
+		move.l	a0, -(sp)
+		move.l	d3, -(sp)
+		jsr Quicksort
+		PopStack 8
+	move.l	(sp)+, d3
+	move.l	(sp)+, d2
+	move.l	(sp)+, a0
+
+	move.l	(sp)+, d3
+	move.l	(sp)+, d2
+
+Quicksort_End:
 	rts
 
 	endif
