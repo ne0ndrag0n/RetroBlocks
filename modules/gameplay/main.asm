@@ -2,7 +2,12 @@
 H_GAMEPLAY_MAIN=1
 
 MainLoop:
+	MemCopy	#SortTest, #$FF00A4, #10
+	Sort	#$FF00A4, #10
+
 	jsr Render
-	bra.s MainLoop
+
+EndLoop:
+	bra.s EndLoop
 
 	endif

@@ -18,8 +18,7 @@ Render_VdpSwitch:
 	jsr InitFramebuffer
 	jsr Test_FramebufferGenerateRamp
 
-Render_EternalLoop:
-	bra.s Render_EternalLoop
+	rts
 
 ; Fill framebuffer with a chroma ramp and swap palette to chroma ramp
 ; This will be used to test Hicolor mode

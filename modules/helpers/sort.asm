@@ -1,6 +1,14 @@
 	ifnd H_HELPERS_SORT
 H_HELPERS_SORT = 1
 
+	macro Sort
+		move.w	\2, -(sp)
+		move.w	#0, -(sp) 	; alignment
+		move.l	\1, -(sp)
+		jsr		Shellsort
+		PopStack 8
+	endm
+
 ; Shellsort an array. The unit used is byte.
 ; aa aa aa aa - Address
 ; 00 00 ss ss - Size
